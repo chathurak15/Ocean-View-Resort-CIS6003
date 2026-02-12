@@ -10,6 +10,7 @@ import com.oceanview.mapper.UserMapper;
 import com.oceanview.model.User;
 import com.oceanview.model.enums.UserType;
 import com.oceanview.service.UserService;
+import com.oceanview.util.PasswordHasher;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +40,8 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         User user = userOpt.get();
-        if (!loginRequestDTO.getPassword().equals(user.getPassword())){
+        String hashedPassword = PasswordHasher.hash(loginRequestDTO.getPassword());
+        if (!hashedPassword.equals(user.getPassword())){
             return null;
         }
         return UserMapper.toDTO(user);
@@ -55,6 +57,8 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
+        String hashedPassword = PasswordHasher.hash(registerDTO.getPassword());
+        registerDTO.setPassword(hashedPassword);
         User user = userDAO.createUser(UserMapper.toEntity(registerDTO));
         return UserMapper.toDTO(user);
     }
@@ -70,4 +74,22 @@ public class UserServiceImpl implements UserService {
         }
         return userDAO.deleteById(userId);
     }
+
+    //update user status (Admin cannot be deactivated)
+    @Override
+    public boolean updateUserStatus(int userId, boolean active) {
+        User user = userDAO.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getUserType() == UserType.ADMINISTRATOR && !active) {
+            throw new RuntimeException("Admin user cannot be deactivated");
+        }
+
+        // status is already same, no need update
+        if (user.isActive() == active) {
+            return true;
+        }
+        return userDAO.updateActiveStatus(userId, active);
+    }
+
 }

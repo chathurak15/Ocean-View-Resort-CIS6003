@@ -11,4 +11,5 @@ public interface UserDAO {
     Optional<User> findActiveByUsername(String username);
     boolean deleteById(int userId);
     Optional<User> findById(int id);
+    boolean updateActiveStatus(int userId, boolean isActive);
 }

@@ -87,6 +87,7 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    //delete user by id
     @Override
     public boolean deleteById(int userId) {
         String sql = "DELETE FROM users WHERE id = ?";
@@ -104,6 +105,7 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    //find user by id
     @Override
     public Optional<User> findById(int id) {
         String sql = "SELECT id, name, user_name, password, user_type, is_active FROM users WHERE id = ?";
@@ -122,6 +124,25 @@ public class UserDAOImpl implements UserDAO {
             throw new RuntimeException("DB error while finding user", e);
         }
     }
+
+    //update user active status by user id
+    @Override
+    public boolean updateActiveStatus(int userId, boolean isActive) {
+        String sql = "UPDATE users SET is_active = ? WHERE id = ?";
+
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setBoolean(1, isActive);
+            ps.setInt(2, userId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("DB error while updating user status", e);
+        }
+    }
+
 
     //map row to user object
     private User mapRow(ResultSet rs) throws SQLException {

@@ -14,4 +14,6 @@ public interface UserService {
     UserDTO createUser(RegisterDTO registerDTO);
 
     boolean deleteUser(int userId);
+
+    boolean updateUserStatus(int userId, boolean active);
 }

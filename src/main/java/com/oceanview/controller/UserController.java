@@ -1,6 +1,7 @@
 package com.oceanview.controller;
 import com.oceanview.dto.user.LoginRequestDTO;
 import com.oceanview.dto.user.RegisterDTO;
+import com.oceanview.dto.user.UpdateStatusDTO;
 import com.oceanview.dto.user.UserDTO;
 import com.oceanview.exception.ForbiddenOperationException;
 import com.oceanview.service.UserService;
@@ -94,6 +95,40 @@ public class UserController extends BaseServlet {
         } catch (NumberFormatException e) {
             sendErrorResponse(resp, 400, "Invalid User ID");
         }
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String path = req.getPathInfo();
+
+        if (path == null) {
+            sendErrorResponse(resp, 404, "Endpoint not found");
+            return;
+        }
+
+        String[] parts = path.split("/");
+        if (parts.length == 3 && "status".equals(parts[2])) {
+            try {
+                int userId = Integer.parseInt(parts[1]);
+                UpdateStatusDTO body = mapper.readValue(req.getReader(), UpdateStatusDTO.class);
+
+                boolean updated = userService.updateUserStatus(userId, body.isActive());
+                if (updated) {
+                    resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                } else {
+                    sendErrorResponse(resp, 404, "User not found");
+                }
+                return;
+
+            } catch (NumberFormatException e) {
+                sendErrorResponse(resp, 400, "Invalid User ID");
+                return;
+            } catch (Exception e) {
+                sendErrorResponse(resp, 400, "Bad Request Format");
+                return;
+            }
+        }
+        sendErrorResponse(resp, 404, "Endpoint not found");
     }
 
 }
