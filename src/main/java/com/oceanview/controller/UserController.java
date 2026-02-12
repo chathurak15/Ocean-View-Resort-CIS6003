@@ -31,8 +31,7 @@ public class UserController extends BaseServlet {
         if ("/login".equals(req.getPathInfo())) {
             try {
                 LoginRequestDTO loginReq = mapper.readValue(req.getReader(), LoginRequestDTO.class);
-                UserDTO user = userService.authenticate(loginReq.getUserName(), loginReq.getPassword());
-
+                UserDTO user = userService.authenticate(loginReq);
                 if (user != null) {
                     sendJsonResponse(resp, user);
                 } else {
