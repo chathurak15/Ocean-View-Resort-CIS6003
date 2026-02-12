@@ -1,4 +1,4 @@
-package com.oceanview.dto;
+package com.oceanview.dto.user;
 
 public class LoginRequestDTO {
    private String userName;

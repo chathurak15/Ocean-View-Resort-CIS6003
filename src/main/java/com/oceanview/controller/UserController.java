@@ -1,6 +1,8 @@
 package com.oceanview.controller;
-import com.oceanview.dto.LoginRequestDTO;
-import com.oceanview.dto.UserDTO;
+import com.oceanview.dto.user.LoginRequestDTO;
+import com.oceanview.dto.user.RegisterDTO;
+import com.oceanview.dto.user.UserDTO;
+import com.oceanview.exception.ForbiddenOperationException;
 import com.oceanview.service.UserService;
 import com.oceanview.service.impl.UserServiceImpl;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +16,7 @@ public class UserController extends BaseServlet {
 
     private final UserService userService = new UserServiceImpl();
 
+    //get all users
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
@@ -26,22 +29,70 @@ public class UserController extends BaseServlet {
         }
     }
 
+    //create user and login user
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if ("/login".equals(req.getPathInfo())) {
-            try {
+        String pathInfo = req.getPathInfo();
+        try {
+            //login user
+            if ("/login".equals(pathInfo)) {
                 LoginRequestDTO loginReq = mapper.readValue(req.getReader(), LoginRequestDTO.class);
-                UserDTO user = userService.authenticate(loginReq);
-                if (user != null) {
-                    sendJsonResponse(resp, user);
+                UserDTO userDTO = userService.authenticate(loginReq);
+
+                if (userDTO != null) {
+                    sendJsonResponse(resp, userDTO);
                 } else {
                     sendErrorResponse(resp, 401, "Invalid Username or Password");
                 }
-            } catch (Exception e) {
-                sendErrorResponse(resp, 400, "Bad Request Format");
+                return;
             }
-        } else {
+
+            //create user
+            if ("/register".equals(pathInfo)) {
+                RegisterDTO registerDTO = mapper.readValue(req.getReader(), RegisterDTO.class);
+                UserDTO created = userService.createUser(registerDTO);
+
+                if (created != null) {
+                    resp.setStatus(HttpServletResponse.SC_CREATED);
+                    sendJsonResponse(resp, created);
+                } else {
+                    sendErrorResponse(resp, 409, "Username already exists or invalid data");
+                }
+                return;
+            }
+
             sendErrorResponse(resp, 404, "Endpoint not found");
+        } catch (Exception e) {
+            sendErrorResponse(resp, 400, "Bad Request Format");
+        }
+    }
+
+    //delete user
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo();
+
+        if (pathInfo == null || "/".equals(pathInfo)) {
+            sendErrorResponse(resp, 400, "User ID is required");
+            return;
+        }
+        try {
+            int userId = Integer.parseInt(pathInfo.substring(1));
+
+            try {
+                boolean deleted = userService.deleteUser(userId);
+
+                if (deleted) {
+                    resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                } else {
+                    sendErrorResponse(resp, 404, "User not found");
+                }
+
+            } catch (ForbiddenOperationException ex) {
+                sendErrorResponse(resp, 403, ex.getMessage());
+            }
+        } catch (NumberFormatException e) {
+            sendErrorResponse(resp, 400, "Invalid User ID");
         }
     }
 

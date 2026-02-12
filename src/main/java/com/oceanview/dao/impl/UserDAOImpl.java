@@ -10,6 +10,44 @@ import java.util.List;
 import java.util.Optional;
 
 public class UserDAOImpl implements UserDAO {
+
+    //create user dao impl
+    @Override
+    public User createUser(User entity) {
+        String sql = "INSERT INTO users (name, user_name, password, user_type, is_active) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, entity.getName());
+            ps.setString(2, entity.getUserName());
+            ps.setString(3, entity.getPassword());
+            ps.setString(4, entity.getUserType().name());
+            ps.setBoolean(5, entity.isActive());
+
+            int affectedRows = ps.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new SQLException("Creating user failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    entity.setUserId(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("Creating user failed, no ID obtained.");
+                }
+            }
+
+            return entity;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("DB error while creating user", e);
+        }
+    }
+
+    //get all users
     @Override
     public List<User> findAll() {
         String sql = "SELECT id, name, user_name,password, user_type, is_active FROM users";
@@ -28,6 +66,7 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    //find active user by username
     @Override
     public Optional<User> findActiveByUsername(String username) {
         String sql = "SELECT id, name, user_name, password, user_type, is_active " +
@@ -48,6 +87,43 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    @Override
+    public boolean deleteById(int userId) {
+        String sql = "DELETE FROM users WHERE id = ?";
+
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+
+            int affectedRows = ps.executeUpdate();
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("DB error while deleting user", e);
+        }
+    }
+
+    @Override
+    public Optional<User> findById(int id) {
+        String sql = "SELECT id, name, user_name, password, user_type, is_active FROM users WHERE id = ?";
+
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return Optional.of(mapRow(rs));
+                return Optional.empty();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("DB error while finding user", e);
+        }
+    }
+
+    //map row to user object
     private User mapRow(ResultSet rs) throws SQLException {
         User user = new User();
         user.setUserId(rs.getInt("id"));

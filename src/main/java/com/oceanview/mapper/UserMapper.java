@@ -1,6 +1,7 @@
 package com.oceanview.mapper;
 
-import com.oceanview.dto.UserDTO;
+import com.oceanview.dto.user.RegisterDTO;
+import com.oceanview.dto.user.UserDTO;
 import com.oceanview.model.User;
 
 public final class UserMapper {
@@ -18,14 +19,16 @@ public final class UserMapper {
         return dto;
     }
 
-    public static User toEntity(UserDTO dto) {
+    // Register Request DTO -> Entity
+    public static User toEntity(RegisterDTO dto) {
         if (dto == null) return null;
+
         User user = new User();
-        user.setUserId(dto.getUserId());
         user.setName(dto.getName());
         user.setUserName(dto.getUserName());
+        user.setPassword(dto.getPassword());
         user.setUserType(dto.getUserType());
-        user.setActive(dto.isActive());
+        user.setActive(true);
         return user;
     }
 }
