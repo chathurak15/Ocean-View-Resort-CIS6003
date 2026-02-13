@@ -18,7 +18,17 @@ import java.util.stream.Collectors;
 
 public class UserServiceImpl implements UserService {
 
-    private final UserDAO userDAO = new UserDAOImpl();
+    private final UserDAO userDAO;
+
+    // Default constructor used in prod
+    public UserServiceImpl() {
+        this.userDAO = new UserDAOImpl();
+    }
+
+    // Constructor for dependency injection (used in unit testing)
+    public UserServiceImpl(UserDAO userDAO) {
+        this.userDAO = userDAO;
+    }
 
     @Override
     public List<UserDTO> getAllUsers() {
