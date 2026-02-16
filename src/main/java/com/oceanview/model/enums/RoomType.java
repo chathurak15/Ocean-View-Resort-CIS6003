@@ -1,5 +1,5 @@
 package com.oceanview.model.enums;
 
 public enum RoomType {
-    STANDARDROOM,DELUXEROOM,FAMILYSUITE
+    STANDARD, DELUXE, FAMILY_SUITE
 }
