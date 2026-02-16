@@ -1,6 +1,8 @@
 package com.oceanview.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oceanview.exception.DataAccessException;
+import com.oceanview.exception.DuplicateResourceException;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
@@ -24,5 +26,19 @@ public class BaseServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         mapper.writeValue(resp.getWriter(), Map.of("error", message));
+    }
+
+    protected void handleException(HttpServletResponse resp,Exception e) throws IOException {
+        if (e instanceof DuplicateResourceException) {
+            sendErrorResponse(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
+            return;
+        }
+
+        if (e instanceof DataAccessException) {
+            sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
+            return;
+        }
+        // default
+        sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
     }
 }
