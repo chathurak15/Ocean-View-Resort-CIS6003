@@ -5,7 +5,7 @@ import com.oceanview.model.enums.RoomType;
 import java.math.BigDecimal;
 
 public class Room {
-    private int roomId;
+    private Integer roomId;
     private String roomName;
     private String roomDescription;
     private BigDecimal roomPrice;
@@ -19,18 +19,15 @@ public class Room {
         this.setRoomType(roomType);
         this.available = available;
     }
-
-    // Constructor enforcing mandatory attributes
-    public Room(int roomId, String roomName, BigDecimal roomPrice, RoomType roomType) {
-        this.roomId = roomId;
-        this.setRoomName(roomName);
-        this.setRoomPrice(roomPrice);
-        this.setRoomType(roomType);
-        this.available = true;
-    }
-
     public int getRoomId() {
         return roomId;
+    }
+
+    public void assignId(Integer roomId) {
+        if (this.roomId != null) {
+            throw new IllegalStateException("Room ID already assigned.");
+        }
+        this.roomId = roomId;
     }
 
     public String getRoomName() {
@@ -84,7 +81,6 @@ public class Room {
         }
         this.available = false;
     }
-
 
     public void markAsAvailable() {
         if (this.available) {
