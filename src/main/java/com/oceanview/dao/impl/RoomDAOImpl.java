@@ -2,6 +2,7 @@ package com.oceanview.dao.impl;
 
 import com.oceanview.dao.RoomDAO;
 import com.oceanview.exception.DataAccessException;
+import com.oceanview.exception.DuplicateResourceException;
 import com.oceanview.model.Room;
 import com.oceanview.model.enums.RoomType;
 import com.oceanview.util.DBConnection;
@@ -71,6 +72,9 @@ public class RoomDAOImpl implements RoomDAO {
             return room;
 
         } catch (SQLException e) {
+            if (e.getSQLState().equals("23000")) {  // MySQL duplicate constraint
+                throw new DuplicateResourceException("Room name already exists.");
+            }
             throw new DataAccessException("Error creating room", e);
         }
     }

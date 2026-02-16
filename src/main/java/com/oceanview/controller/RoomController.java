@@ -2,6 +2,8 @@ package com.oceanview.controller;
 
 import com.oceanview.dto.room.CreateRoomDTO;
 import com.oceanview.dto.room.RoomDTO;
+import com.oceanview.exception.DataAccessException;
+import com.oceanview.exception.DuplicateResourceException;
 import com.oceanview.service.RoomService;
 import com.oceanview.service.impl.RoomServiceImpl;
 import com.oceanview.validation.ValidatorContext;
@@ -63,10 +65,12 @@ public class RoomController extends BaseServlet {
                 RoomDTO created = roomService.createRoom(dto);
                 resp.setStatus(HttpServletResponse.SC_CREATED);
                 sendJsonResponse(resp, created);
-            } catch (IllegalStateException dup) {
-                sendErrorResponse(resp, 409, dup.getMessage());
+            } catch (DuplicateResourceException e) {
+                sendErrorResponse(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
+            } catch (DataAccessException e) {
+                sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
             } catch (Exception e) {
-                sendErrorResponse(resp, 500, "Server error");
+                sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
             }
             return;
         }
