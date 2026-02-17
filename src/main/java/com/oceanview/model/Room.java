@@ -19,7 +19,7 @@ public class Room {
         this.setRoomType(roomType);
         this.available = available;
     }
-    public int getRoomId() {
+    public Integer getRoomId() {
         return roomId;
     }
 

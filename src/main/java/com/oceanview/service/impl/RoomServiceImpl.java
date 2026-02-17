@@ -21,6 +21,10 @@ public class RoomServiceImpl implements RoomService {
         this.roomDAO = new RoomDAOImpl();
     }
 
+    public RoomServiceImpl(RoomDAO roomDAO) {
+        this.roomDAO = roomDAO;
+    }
+
     @Override
     public RoomDTO createRoom(CreateRoomDTO dto) {
         // Room name must be unique
@@ -28,6 +32,7 @@ public class RoomServiceImpl implements RoomService {
         if (roomDAO.existsByName(name)) {
             throw new DuplicateResourceException("Room name already exists.");
         }
+        dto.setRoomName(name);
         Room room = RoomMapper.toEntity(dto);
         Room savedRoom = roomDAO.createRoom(room);
         return RoomMapper.toDTO(savedRoom);
@@ -77,7 +82,10 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomDAO.getRoomById(id);
         if (room == null) throw new ResourceNotFoundException("Room not found: " + id);
 
-        // domain behavior
+        if (room.isAvailable() == available) {
+            return;
+        }
+
         if (available) room.markAsAvailable();
         else room.markAsBooked();
 
