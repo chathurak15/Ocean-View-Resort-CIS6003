@@ -144,7 +144,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
 
-    //map row to user object
+    //map row to a user object
     private User mapRow(ResultSet rs) throws SQLException {
         User user = new User();
         user.setUserId(rs.getInt("id"));
