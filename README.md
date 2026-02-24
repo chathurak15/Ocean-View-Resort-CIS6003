@@ -1,82 +1,131 @@
 # Ocean View Resort – Distributed Online Reservation System
 
-## Module
+## Module  
 CIS6003 – Advanced Programming  
-BSc (Hons) Software Engineering
-
-## Project Overview
-Ocean View Resort is a distributed online room reservation system developed using Java Servlet API.  
-The system replaces manual booking management with a secure, scalable, and structured 3-tier architecture.
+BSc (Hons) Software Engineering  
 
 ---
 
-## Architecture
+## Project Overview
+
+Ocean View Resort is a distributed online room reservation system developed using Java Servlet API and JDBC.
+
+The system replaces manual booking management with a secure, scalable, and layered architecture aligned with enterprise Java EE fundamentals.
+
+The project strictly follows:
+
+- 3-Tier Architecture
+- Object Oriented Design
+- SOLID Principles
+- Design Pattern Implementation
+- Service Level Unit Testing (TDD-aligned approach)
+
+---
+
+# System Architecture
 
 The system follows a strict 3-Tier Architecture:
 
-1. Presentation Layer
-   - Servlets
-   - JSON-based REST endpoints
-   - Session management
+## 1️⃣ Presentation Layer
+- Java Servlets
+- JSON-based RESTful endpoints
+- Centralized error handling
+- Session management
 
-2. Business Layer
-   - Service implementations
-   - Business rule enforcement
-   - Strategy pattern (planned for billing module)
+## 2️⃣ Business Layer
+- Service implementations
+- Business rule enforcement
+- Constructor-based Dependency Injection
+- Strategy Pattern (Validation implemented, Billing planned)
 
-3. Data Access Layer
-   - DAO Pattern
-   - JDBC (MySQL)
-   - Connection utility
+## 3️⃣ Data Access Layer
+- DAO Pattern
+- JDBC (MySQL)
+- Connection utility
+- Custom exception translation (DataAccessException)
 
-SOLID principles and separation of concerns are maintained throughout.
+Separation of concerns is strictly maintained.
 
 ---
 
-## Implemented Module: User Management
+# Implemented Modules
+
+## ✅ User Management Module
 
 ### Features
-- User registration
-- Secure authentication (SHA-256 hashing)
-- Role-based deletion restrictions
-- User status activation/deactivation
-- Exception handling
+- Secure authentication (SHA-256 password hashing)
+- Role-based deletion restriction (Administrator protection)
+- User activation/deactivation
+- Exception-based validation
+- Service-layer unit testing
 
----
-
-## Design Principles Applied
-- Dependency Injection
+### Design Concepts Applied
 - DAO Pattern
 - DTO Mapping Layer
-- SOLID Principles
-- 3-Tier Architecture
+- Dependency Injection (for testability)
+- Exception handling abstraction
+- Service-level business rule enforcement
 
 ---
 
-## Testing Strategy
+## ✅ Room Management Module
 
+### Features
+- Create room
+- Retrieve all rooms
+- Retrieve room by ID
+- Update room details
+- Update room availability (idempotent logic)
+- Delete room
+- Duplicate name prevention
+- Centralized exception handling
+
+### Design Concepts Applied
+- DAO Pattern
+- Validation Strategy Pattern
+- Service-layer business logic isolation
+- Constructor Injection for testability
+
+---
+# Testing Strategy
+
+Testing focuses on the Service Layer, where business logic resides.
+
+## Approach
 - JUnit 4.13.2
-- Service layer tested using FakeUserDAO
-- Dependency injection used for isolation
-- High test coverage achieved (90%+ line coverage)
+- FakeDAO implementations for isolation
+- Constructor injection for dependency control
+- Service-layer isolation testing
+- Edge case validation
+- Exception testing
+
+## Coverage
+- 94%+ Line Coverage
+- 80%+ Branch Coverage
+- 100% Class Coverage
+
+This approach ensures deterministic, fast, and isolated unit tests aligned with TDD principles.
 
 ---
 
-## Git Workflow
+# Git Workflow
 
-Branching Strategy:
-- Dev → Development
+## Branching Strategy
+
+- Dev → Active development
 - Test → Verified builds
-- Master → Stable release
+- Master → Stable releases
 
-Pull requests used for controlled merges.
+Pull Requests are used for controlled merges.
 
-Versioning:
+## Versioning
+
 - v0.2.0-user-module
+- v0.2.1-user-test
 
 ---
 
-## Technologies Used
+# Technologies Used
 
 - Java 21+
 - Servlet API
@@ -87,13 +136,17 @@ Versioning:
 
 ---
 
-## Future Modules
-
-- Reservation Management
+# Future Modules
+- Geuset Mangement
+- Reservation Management (core distributed booking logic)
 - Billing Calculation (Strategy Pattern)
 - Reporting
-- Stored Procedures / Database triggers
+- Session-based authentication improvements
 
 ---
 
-Chathura Kavindu Bandara
+## Author
+
+Chathura Kavindu Bandara  
+BSc (Hons) Software Engineering  
+CIS6003 – Advanced Programming
