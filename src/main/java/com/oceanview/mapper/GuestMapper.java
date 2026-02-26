@@ -1,5 +1,6 @@
 package com.oceanview.mapper;
 
+import com.oceanview.dto.guest.CreateGuestDTO;
 import com.oceanview.dto.guest.GuestDTO;
 import com.oceanview.model.Guest;
 
@@ -17,5 +18,15 @@ public class GuestMapper {
         guestDTO.setNic(guest.getNic());
         guestDTO.setCreatedAt(guest.getCreatedAt());
         return guestDTO;
+    }
+
+    public static Guest toEntity(CreateGuestDTO dto) {
+        Guest guest = new Guest(
+                dto.getName(),
+                dto.getEmail(),
+                dto.getPhoneNumber(),
+                dto.getAddress(),
+                dto.getNic());
+        return guest;
     }
 }

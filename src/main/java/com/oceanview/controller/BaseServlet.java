@@ -1,6 +1,8 @@
 package com.oceanview.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.oceanview.exception.DataAccessException;
 import com.oceanview.exception.DuplicateResourceException;
 import com.oceanview.exception.ResourceNotFoundException;
@@ -13,7 +15,8 @@ import java.io.PrintWriter;
 import java.util.Map;
 
 public class BaseServlet extends HttpServlet {
-    protected final ObjectMapper mapper = new ObjectMapper();
+    protected final ObjectMapper mapper = new ObjectMapper() .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     protected void sendJsonResponse(HttpServletResponse resp, Object data) throws IOException {
         resp.setContentType("application/json");

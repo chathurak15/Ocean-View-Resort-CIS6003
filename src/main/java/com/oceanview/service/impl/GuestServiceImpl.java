@@ -2,10 +2,12 @@ package com.oceanview.service.impl;
 
 import com.oceanview.dao.GuestDAO;
 import com.oceanview.dao.impl.GuestDAOImpl;
+import com.oceanview.dto.guest.CreateGuestDTO;
 import com.oceanview.dto.guest.GuestDTO;
 import com.oceanview.mapper.GuestMapper;
 import com.oceanview.model.Guest;
 import com.oceanview.service.GuestService;
+import com.oceanview.service.search.GuestSearchCriteria;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,4 +28,21 @@ public class GuestServiceImpl implements GuestService {
         List<Guest> guestList = guestDAO.getAllGuests();
         return guestList.stream().map(GuestMapper::toDTO).collect(Collectors.toList());
     }
+
+    //add guest
+    @Override
+    public GuestDTO addGuest(CreateGuestDTO dto) {
+        Guest guest = GuestMapper.toEntity(dto);
+        Guest savedGuest = guestDAO.addGuest(guest);
+        return GuestMapper.toDTO(savedGuest);
+    }
+
+    //search guests
+    @Override
+    public List<GuestDTO> searchGuests(GuestSearchCriteria criteria) {
+        List<Guest> guestList = guestDAO.search(criteria);
+
+        return guestList.stream().map(GuestMapper::toDTO).toList();
+    }
+
 }
