@@ -9,5 +9,6 @@ public interface GuestDAO {
     List<Guest> getAllGuests();
     Guest addGuest(Guest guest);
     List<Guest> search(GuestSearchCriteria criteria);
-
+    boolean existsByNic(String nic);
+    boolean existsByPhoneNumber(String phoneNumber);
 }

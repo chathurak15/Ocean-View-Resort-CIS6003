@@ -2,7 +2,6 @@ package com.oceanview.controller;
 
 import com.oceanview.dto.guest.CreateGuestDTO;
 import com.oceanview.dto.guest.GuestDTO;
-import com.oceanview.dto.room.RoomDTO;
 import com.oceanview.service.GuestService;
 import com.oceanview.service.impl.GuestServiceImpl;
 import com.oceanview.service.search.GuestSearchCriteria;

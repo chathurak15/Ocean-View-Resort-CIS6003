@@ -14,7 +14,6 @@ public class GuestDAOImpl implements GuestDAO {
     public List<Guest> getAllGuests() {
         String sql = "SELECT * FROM guests";
         List<Guest> guests = new ArrayList<>();
-
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -27,12 +26,10 @@ public class GuestDAOImpl implements GuestDAO {
                         rs.getString("address"),
                         rs.getString("nic")
                 );
-
                 guest.setGuestId(rs.getInt("guest_id"));
                 guest.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 guests.add(guest);
             }
-
         } catch (SQLException e) {
             throw new RuntimeException("Error retrieving guests", e);
         }
@@ -42,7 +39,6 @@ public class GuestDAOImpl implements GuestDAO {
     @Override
     public Guest addGuest(Guest guest) {
         String sql = "INSERT INTO guests (name, email, phone_number, address, nic) VALUES (?, ?, ?, ?, ?)";
-
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -59,7 +55,6 @@ public class GuestDAOImpl implements GuestDAO {
                 guest.setGuestId(keys.getInt(1));
             }
             return guest;
-
         } catch (SQLException e) {
             throw new RuntimeException("Error creating guest", e);
         }
@@ -70,7 +65,6 @@ public class GuestDAOImpl implements GuestDAO {
     public List<Guest> search(GuestSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder("SELECT * FROM guests WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
-
         if (criteria.hasGuestId()){
             sql.append("AND guest_id = ? ");
             params.add(criteria.getGuestId());
@@ -85,7 +79,6 @@ public class GuestDAOImpl implements GuestDAO {
             params.add(criteria.getPhoneNumber());
         }
         List<Guest> guests = new ArrayList<>();
-
         try (Connection conn = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql.toString())){
             for (int i = 0; i < params.size(); i++) {
@@ -109,5 +102,37 @@ public class GuestDAOImpl implements GuestDAO {
             throw new RuntimeException("Error searching guests", ex);
         }
         return guests;
+    }
+
+    @Override
+    public boolean existsByNic(String nic) {
+        String sql = "SELECT COUNT(*) FROM guests WHERE nic = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nic);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking guest existence", e);
+        }
+    }
+
+    @Override
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        String sql = "SELECT COUNT(*) FROM guests WHERE phone_number = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, phoneNumber);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking guest existence", e);
+        }
     }
 }

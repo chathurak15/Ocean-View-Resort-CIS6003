@@ -4,6 +4,7 @@ import com.oceanview.dao.GuestDAO;
 import com.oceanview.dao.impl.GuestDAOImpl;
 import com.oceanview.dto.guest.CreateGuestDTO;
 import com.oceanview.dto.guest.GuestDTO;
+import com.oceanview.exception.DuplicateResourceException;
 import com.oceanview.mapper.GuestMapper;
 import com.oceanview.model.Guest;
 import com.oceanview.service.GuestService;
@@ -33,6 +34,12 @@ public class GuestServiceImpl implements GuestService {
     @Override
     public GuestDTO addGuest(CreateGuestDTO dto) {
         Guest guest = GuestMapper.toEntity(dto);
+        if (guestDAO.existsByNic(guest.getNic())) {
+            throw new DuplicateResourceException("Guest with NIC already exists");
+        }
+        if (guestDAO.existsByPhoneNumber(guest.getPhoneNumber())) {
+            throw new DuplicateResourceException("Guest with phone number already exists");
+        }
         Guest savedGuest = guestDAO.addGuest(guest);
         return GuestMapper.toDTO(savedGuest);
     }
@@ -41,7 +48,6 @@ public class GuestServiceImpl implements GuestService {
     @Override
     public List<GuestDTO> searchGuests(GuestSearchCriteria criteria) {
         List<Guest> guestList = guestDAO.search(criteria);
-
         return guestList.stream().map(GuestMapper::toDTO).toList();
     }
 
