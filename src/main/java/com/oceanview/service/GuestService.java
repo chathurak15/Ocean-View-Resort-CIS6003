@@ -10,4 +10,7 @@ public interface GuestService {
     List<GuestDTO> getAllGuests();
     GuestDTO addGuest(CreateGuestDTO dto);
     List<GuestDTO> searchGuests(GuestSearchCriteria criteria);
+    GuestDTO updateGuest(int id, CreateGuestDTO dto);
+    void deleteGuest(int id);
+    GuestDTO getGuestById(int id);
 }

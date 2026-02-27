@@ -65,11 +65,11 @@ public class GuestDAOImpl implements GuestDAO {
     public List<Guest> search(GuestSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder("SELECT * FROM guests WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
-        if (criteria.hasGuestId()){
+        if (criteria.hasGuestId()) {
             sql.append("AND guest_id = ? ");
             params.add(criteria.getGuestId());
         }
-        if (criteria.hasNic()){
+        if (criteria.hasNic()) {
             sql.append("AND nic = ? ");
             params.add(criteria.getNic());
         }
@@ -80,7 +80,7 @@ public class GuestDAOImpl implements GuestDAO {
         }
         List<Guest> guests = new ArrayList<>();
         try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql.toString())){
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
@@ -104,6 +104,7 @@ public class GuestDAOImpl implements GuestDAO {
         return guests;
     }
 
+    //check if guest exists by nic or phone number
     @Override
     public boolean existsByNic(String nic) {
         String sql = "SELECT COUNT(*) FROM guests WHERE nic = ?";
@@ -135,4 +136,65 @@ public class GuestDAOImpl implements GuestDAO {
             throw new RuntimeException("Error checking guest existence", e);
         }
     }
+
+    //get guest by id
+    @Override
+    public Guest getByGuestId(int id) {
+        String sql = "SELECT * FROM guests WHERE guest_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Guest guest = new Guest(
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("phone_number"),
+                        rs.getString("address"),
+                        rs.getString("nic")
+                );
+                guest.setGuestId(rs.getInt("guest_id"));
+                guest.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                return guest;
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //update guest by id
+    public Guest updateGuest(Guest guest) {
+        String sql = "UPDATE guests SET name = ?, email = ?, phone_number = ?, address = ?, nic = ? WHERE guest_id = ? ";
+        try ( Connection conn = DBConnection.getInstance().getConnection();
+              PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setString(1, guest.getName());
+            ps.setString(2, guest.getEmail());
+            ps.setString(3, guest.getPhoneNumber());
+            ps.setString(4, guest.getAddress());
+            ps.setString(5, guest.getNic());
+            ps.setInt(6, guest.getGuestId());
+            int affected = ps.executeUpdate();
+            if (affected == 0) {
+                throw new RuntimeException("Guest not found for update");
+            }
+            return guest;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteGuest(int id) {
+        String sql = "DELETE FROM guests WHERE guest_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

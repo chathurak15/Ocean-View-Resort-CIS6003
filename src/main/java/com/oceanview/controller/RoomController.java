@@ -114,9 +114,7 @@ public class RoomController extends BaseServlet {
 
             int id = Integer.parseInt(pathInfo.substring(1));
             roomService.deleteRoom(id);
-
             sendJsonResponse(resp, Map.of("status", "DELETED"));
-
         } catch (Exception e) {
             handleException(resp, e);
         }

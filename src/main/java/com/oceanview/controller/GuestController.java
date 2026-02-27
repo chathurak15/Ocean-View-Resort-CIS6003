@@ -2,12 +2,14 @@ package com.oceanview.controller;
 
 import com.oceanview.dto.guest.CreateGuestDTO;
 import com.oceanview.dto.guest.GuestDTO;
+import com.oceanview.dto.room.RoomDTO;
 import com.oceanview.service.GuestService;
 import com.oceanview.service.impl.GuestServiceImpl;
 import com.oceanview.service.search.GuestSearchCriteria;
 import com.oceanview.validation.ValidatorContext;
 import com.oceanview.validation.guest.CreateGuestValidationStrategy;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +40,10 @@ public class GuestController extends BaseServlet{
                 handleSearch(req, resp);
                 return;
             }
+            int id = Integer.parseInt(pathInfo.substring(1));
+            GuestDTO guestDTO = guestService.getGuestById(id);
+            sendJsonResponse(resp, guestDTO);
+
         }catch (NumberFormatException e) {
             handleException(resp, new IllegalArgumentException("Invalid guest id in URL", e));
         } catch (Exception e) {
@@ -64,6 +70,49 @@ public class GuestController extends BaseServlet{
             GuestDTO created = guestService.addGuest(dto);
             resp.setStatus(HttpServletResponse.SC_CREATED);
             sendJsonResponse(resp, created);
+
+        } catch (Exception e) {
+            handleException(resp, e);
+        }
+    }
+
+    //update guest
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            String pathInfo = req.getPathInfo();
+            if (pathInfo == null || "/".equals(pathInfo)) {
+                sendErrorResponse(resp, 400, "Guest ID is required");
+                return;
+            }
+            int id = Integer.parseInt(pathInfo.substring(1));
+            CreateGuestDTO dto = mapper.readValue(req.getReader(), CreateGuestDTO.class);
+            Map<String, String> errors = validatorContext.validate(dto, CreateGuestDTO.class);
+            if (!errors.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                sendJsonResponse(resp, Map.of("status", "VALIDATION_ERROR", "errors", errors));
+                return;
+            }
+            GuestDTO updated = guestService.updateGuest(id, dto);
+            sendJsonResponse(resp, updated);
+        } catch (Exception e) {
+            handleException(resp, e);
+        }
+
+    }
+
+    //delete guest
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            String pathInfo = req.getPathInfo();
+            if (pathInfo == null || "/".equals(pathInfo)) {
+                sendErrorResponse(resp, 400, "Guest ID is required");
+                return;
+            }
+
+            int id = Integer.parseInt(pathInfo.substring(1));
+            guestService.deleteGuest(id);
+            sendJsonResponse(resp, Map.of("status", "DELETED"));
 
         } catch (Exception e) {
             handleException(resp, e);

@@ -85,7 +85,6 @@ public class RoomServiceImpl implements RoomService {
         if (room.isAvailable() == available) {
             return;
         }
-
         if (available) room.markAsAvailable();
         else room.markAsBooked();
 
@@ -96,7 +95,6 @@ public class RoomServiceImpl implements RoomService {
     public void deleteRoom(int id) {
         Room room = roomDAO.getRoomById(id);
         if (room == null) throw new ResourceNotFoundException("Room not found: " + id);
-
         roomDAO.deleteRoom(id);
     }
 }
