@@ -75,14 +75,14 @@ public class Room {
         return available;
     }
 
-    public void markAsBooked() {
+    public void markOutOfService() {
         if (!this.available) {
             throw new IllegalStateException("Room is already booked.");
         }
         this.available = false;
     }
 
-    public void markAsAvailable() {
+    public void markInService() {
         if (this.available) {
             throw new IllegalStateException("Room is already available.");
         }
