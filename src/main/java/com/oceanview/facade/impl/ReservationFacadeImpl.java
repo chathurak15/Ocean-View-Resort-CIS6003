@@ -14,6 +14,8 @@ import com.oceanview.model.Reservation;
 import com.oceanview.model.enums.Status;
 import com.oceanview.service.GuestService;
 import com.oceanview.service.RoomService;
+import com.oceanview.service.billing.BillingStrategy;
+import com.oceanview.service.billing.FlatRateBillingStrategy;
 import com.oceanview.service.impl.GuestServiceImpl;
 import com.oceanview.service.impl.RoomServiceImpl;
 
@@ -27,6 +29,7 @@ public class ReservationFacadeImpl implements ReservationFacade {
     private final GuestService guestService;
     private final RoomService roomService;
     private final ReservationDAO reservationDAO;
+    private final BillingStrategy billingStrategy = new FlatRateBillingStrategy();
 
     public ReservationFacadeImpl() {
         this.guestService = new GuestServiceImpl();
@@ -80,6 +83,8 @@ public class ReservationFacadeImpl implements ReservationFacade {
         reservation.setReservationNo(generateReservationNo());
         reservation.setStatus(Status.CONFIRMED);
         reservation.setCreatedAt(LocalDateTime.now());
+
+        billingStrategy.applyPricing(reservation);
 
         Reservation saved = reservationDAO.createReservation(reservation);
         return ReservationMapper.toDTO(saved);
