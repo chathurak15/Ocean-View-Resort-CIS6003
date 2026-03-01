@@ -3,6 +3,7 @@ package com.oceanview.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.oceanview.exception.BusinessRuleException;
 import com.oceanview.exception.DataAccessException;
 import com.oceanview.exception.DuplicateResourceException;
 import com.oceanview.exception.ResourceNotFoundException;
@@ -45,6 +46,10 @@ public class BaseServlet extends HttpServlet {
         }
         if (e instanceof ResourceNotFoundException) {
             sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            return;
+        }
+        if (e instanceof BusinessRuleException) {
+            sendErrorResponse(resp, HttpServletResponse.SC_CONFLICT, e.getMessage());
             return;
         }
         // default
