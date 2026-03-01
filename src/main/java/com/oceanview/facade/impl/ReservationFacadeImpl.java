@@ -1,6 +1,5 @@
 package com.oceanview.facade.impl;
 import com.oceanview.dao.ReservationDAO;
-import com.oceanview.dao.impl.ReservationDAOImpl;
 import com.oceanview.dto.Reservation.CreateReservationDTO;
 import com.oceanview.dto.Reservation.ReservationDTO;
 import com.oceanview.dto.guest.GuestDTO;
@@ -15,9 +14,6 @@ import com.oceanview.model.enums.Status;
 import com.oceanview.service.GuestService;
 import com.oceanview.service.RoomService;
 import com.oceanview.service.billing.BillingStrategy;
-import com.oceanview.service.billing.FlatRateBillingStrategy;
-import com.oceanview.service.impl.GuestServiceImpl;
-import com.oceanview.service.impl.RoomServiceImpl;
 
 
 import java.time.LocalDateTime;
@@ -29,18 +25,14 @@ public class ReservationFacadeImpl implements ReservationFacade {
     private final GuestService guestService;
     private final RoomService roomService;
     private final ReservationDAO reservationDAO;
-    private final BillingStrategy billingStrategy = new FlatRateBillingStrategy();
+    private final BillingStrategy billingStrategy;
 
-    public ReservationFacadeImpl() {
-        this.guestService = new GuestServiceImpl();
-        this.roomService = new RoomServiceImpl();
-        this.reservationDAO = new ReservationDAOImpl();
-    }
 
-    public ReservationFacadeImpl(GuestService guestService, RoomService roomService, ReservationDAO reservationDAO) {
+    public ReservationFacadeImpl(GuestService guestService, RoomService roomService, ReservationDAO reservationDAO, BillingStrategy billingStrategy) {
         this.guestService = guestService;
         this.roomService = roomService;
         this.reservationDAO = reservationDAO;
+        this.billingStrategy = billingStrategy;
     }
 
     //create reservation

@@ -1,11 +1,19 @@
 package com.oceanview.controller;
 
+import com.oceanview.dao.ReservationDAO;
+import com.oceanview.dao.impl.ReservationDAOImpl;
 import com.oceanview.dto.Reservation.CreateReservationDTO;
 import com.oceanview.dto.Reservation.ReservationDTO;
 import com.oceanview.dto.room.CreateRoomDTO;
 import com.oceanview.dto.room.RoomDTO;
 import com.oceanview.facade.ReservationFacade;
 import com.oceanview.facade.impl.ReservationFacadeImpl;
+import com.oceanview.service.GuestService;
+import com.oceanview.service.RoomService;
+import com.oceanview.service.billing.BillingStrategy;
+import com.oceanview.service.billing.RoomTypeSurchargeBillingStrategy;
+import com.oceanview.service.impl.GuestServiceImpl;
+import com.oceanview.service.impl.RoomServiceImpl;
 import com.oceanview.validation.ValidatorContext;
 import com.oceanview.validation.reservation.CreateReservationValidationStrategy;
 
@@ -19,11 +27,17 @@ import java.util.Map;
 @WebServlet(name = "ReservationServlet", urlPatterns = {"/api/reservations/*"})
 public class ReservationController extends BaseServlet{
     private final ValidatorContext validatorContext = new ValidatorContext();
-    private final ReservationFacade reservationFacade = new ReservationFacadeImpl();
+    private ReservationFacade reservationFacade;
 
     @Override
     public void init() {
         validatorContext.register(CreateReservationDTO.class, new CreateReservationValidationStrategy());
+
+        GuestService guestService = new GuestServiceImpl();
+        RoomService roomService = new RoomServiceImpl();
+        ReservationDAO reservationDAO = new ReservationDAOImpl();
+        BillingStrategy billingStrategy = new RoomTypeSurchargeBillingStrategy();
+        reservationFacade = new ReservationFacadeImpl(guestService, roomService, reservationDAO, billingStrategy);
     }
 
     @Override
