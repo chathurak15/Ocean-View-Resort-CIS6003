@@ -29,4 +29,20 @@ public class GuestMapper {
                 dto.getNic());
         return guest;
     }
+
+    public static Guest toEntity(GuestDTO dto) {
+        if (dto == null) return null;
+        Guest guest = new Guest(
+                dto.getName(),
+                dto.getEmail(),
+                dto.getPhoneNumber(),
+                dto.getAddress(),
+                dto.getNic()
+        );
+
+        if (dto.getGuestId() != null) {
+            guest.setGuestId(dto.getGuestId());
+        }
+        return guest;
+    }
 }
