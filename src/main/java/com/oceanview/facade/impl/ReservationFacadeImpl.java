@@ -27,7 +27,6 @@ public class ReservationFacadeImpl implements ReservationFacade {
     private final ReservationDAO reservationDAO;
     private final BillingStrategy billingStrategy;
 
-
     public ReservationFacadeImpl(GuestService guestService, RoomService roomService, ReservationDAO reservationDAO, BillingStrategy billingStrategy) {
         this.guestService = guestService;
         this.roomService = roomService;
@@ -95,7 +94,14 @@ public class ReservationFacadeImpl implements ReservationFacade {
         return ReservationMapper.toDTO(reservation);
     }
 
-   //cancel reservation
+    //get all reservations
+    @Override
+    public List<ReservationDTO> getAllReservations() {
+        List<Reservation> reservations = reservationDAO.getAllReservations();
+        return reservations.stream().map(ReservationMapper::toDTO).toList();
+    }
+
+    //cancel reservation
     @Override
     public void cancelReservation(String reservationNo) {
         if (reservationNo == null || reservationNo.isBlank()) {
@@ -113,13 +119,6 @@ public class ReservationFacadeImpl implements ReservationFacade {
         reservation.setStatus(Status.CANCELLED);
 
         reservationDAO.updateStatus(reservationNo, Status.CANCELLED);
-    }
-
-    //get all reservations
-    @Override
-    public List<ReservationDTO> getAllReservations() {
-        List<Reservation> reservations = reservationDAO.getAllReservations();
-        return reservations.stream().map(ReservationMapper::toDTO).toList();
     }
 
     @Override
