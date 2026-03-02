@@ -2,6 +2,7 @@ package com.oceanview.dao;
 
 import com.oceanview.model.Room;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +57,11 @@ public class FakeRoomDAO implements RoomDAO {
     @Override
     public void deleteRoom(int roomId) {
         store.remove(roomId);
+    }
+
+    @Override
+    public List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut) {
+        return List.of();
     }
 
     @Override

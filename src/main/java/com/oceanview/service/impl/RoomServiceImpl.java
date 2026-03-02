@@ -5,12 +5,14 @@ import com.oceanview.dao.impl.RoomDAOImpl;
 import com.oceanview.dto.room.CreateRoomDTO;
 import com.oceanview.dto.room.RoomDTO;
 import com.oceanview.dto.room.UpdateRoomDTO;
+import com.oceanview.exception.BusinessRuleException;
 import com.oceanview.exception.DuplicateResourceException;
 import com.oceanview.exception.ResourceNotFoundException;
 import com.oceanview.mapper.RoomMapper;
 import com.oceanview.model.Room;
 import com.oceanview.service.RoomService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,5 +98,17 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomDAO.getRoomById(id);
         if (room == null) throw new ResourceNotFoundException("Room not found: " + id);
         roomDAO.deleteRoom(id);
+    }
+
+    @Override
+    public List<RoomDTO> getAvailableRooms(LocalDate checkIn, LocalDate checkOut) {
+        if (checkIn == null || checkOut == null) {
+            throw new BusinessRuleException("Check-in and check-out dates are required.");
+        }
+        if (!checkIn.isBefore(checkOut)) {
+            throw new BusinessRuleException("Check-out date must be after check-in date.");
+        }
+        List<Room> rooms = roomDAO.findAvailableRooms(checkIn, checkOut);
+        return rooms.stream().map(RoomMapper::toDTO).toList();
     }
 }
