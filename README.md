@@ -1,99 +1,216 @@
 # Ocean View Resort – Distributed Online Reservation System
 
-## Module
+## Module  
 CIS6003 – Advanced Programming  
-BSc (Hons) Software Engineering
-
-## Project Overview
-Ocean View Resort is a distributed online room reservation system developed using Java Servlet API.  
-The system replaces manual booking management with a secure, scalable, and structured 3-tier architecture.
+BSc (Hons) Software Engineering  
 
 ---
 
-## Architecture
+## Project Overview
+
+Ocean View Resort is a distributed online room reservation system developed using Java Servlet API and JDBC.
+
+The system replaces manual booking management with a secure, scalable, and layered architecture aligned with enterprise Java EE fundamentals.
+
+The project strictly follows:
+
+- 3 Tier Architecture
+- Object Oriented Design
+- SOLID Principles
+- Design Pattern Implementation
+- Service Level Unit Testing (TDD-aligned approach)
+
+---
+
+# System Architecture
 
 The system follows a strict 3-Tier Architecture:
 
-1. Presentation Layer
-   - Servlets
-   - JSON-based REST endpoints
-   - Session management
-
-2. Business Layer
-   - Service implementations
-   - Business rule enforcement
-   - Strategy pattern (planned for billing module)
-
-3. Data Access Layer
-   - DAO Pattern
-   - JDBC (MySQL)
-   - Connection utility
-
-SOLID principles and separation of concerns are maintained throughout.
+## 1️ Presentation Layer
+- Java Servlets
+- REST style JSON endpoints
+- Centralized exception handling (BaseServlet)
+- HTTP status code standardization
+- Date-range query support
+- Session-ready architecture
 
 ---
 
-## Implemented Module: User Management
+## 2️ Business Layer
+- Service implementations
+- Business rule validation
+- Constructor-based Dependency Injection
+- Strategy Pattern (Billing logic)
+- Validation Strategy Pattern
+- Exception-driven flow control
+
+This layer contains the core domain logic and is fully unit-tested.
+
+---
+
+## 3️ Data Access Layer
+- DAO Pattern
+- JDBC (MySQL)
+- Connection utility (Singleton pattern)
+- Custom exception abstraction (DataAccessException)
+
+Strict separation of concerns is maintained between layers.
+
+---
+
+#  Implemented Modules
+
+---
+
+## User Management Module
 
 ### Features
-- User registration
-- Secure authentication (SHA-256 hashing)
-- Role-based deletion restrictions
-- User status activation/deactivation
-- Exception handling
+- Secure authentication (SHA-256 password hashing)
+- Role-based deletion restriction (Administrator protection)
+- User activation/deactivation
+- Duplicate username prevention
+- Service-layer validation
+- Full unit test coverage
 
----
-
-## Design Principles Applied
-- Dependency Injection
+### Design Concepts Applied
 - DAO Pattern
 - DTO Mapping Layer
-- SOLID Principles
-- 3-Tier Architecture
+- Constructor Injection
+- Exception abstraction
+- Business rule enforcement in the Service layer
 
 ---
 
-## Testing Strategy
+## Guest Management Module
+### Features
+- Create, retrieve, update, and delete guests
+- Search by ID, NIC, and phone number
+- Duplicate validation checks
+- Service-level isolation testing
+---
 
+## Room Management Module
+### Features
+- Create room
+- Retrieve all rooms
+- Retrieve room by ID
+- Update room details
+- Update room availability (idempotent logic)
+- Delete room
+- Duplicate room name prevention
+- Available rooms by date range
+- Maintenance/availability logic
+
+### Design Concepts Applied
+- DAO Pattern
+- Validation Strategy Pattern
+- Service-layer isolation
+- Constructor Injection for testability
+- BusinessRuleException enforcement
+---
+
+##  Reservation Management Module
+### Features
+- Create reservation
+- Reservation conflict detection
+- Cancel reservation
+- Complete reservation
+- Retrieve by reservation number
+- Retrieve all reservations
+- Retrieve reservations by date range (reporting)
+- Reservation status lifecycle management
+
+### Conflict Handling
+- Overlapping booking prevention
+- Boundary condition handling (check-in equals check-out allowed)
+- Confirmed reservations block availability
+- Cancelled reservations do not block availability
+
+---
+
+## Billing Module (Strategy Pattern)
+
+### Implemented Strategies
+
+- `FlatRateBillingStrategy`  
+- `RoomTypeSurchargeBillingStrategy`  
+
+### Features
+- Dynamic price calculation
+- Night-based billing
+- Room type multiplier logic
+- Reservation line item total calculation
+- Business rule validation for invalid rates
+
+### Design Pattern Applied
+- Strategy Pattern (Runtime billing selection)
+---
+
+# Testing Strategy
+Testing focuses on the **Service Layer**, where business logic resides.
+## Approach
 - JUnit 4.13.2
-- Service layer tested using FakeUserDAO
-- Dependency injection used for isolation
-- High test coverage achieved (90%+ line coverage)
+- FakeDAO implementations for isolation
+- Stub services for facade testing
+- Constructor based dependency injection
+- Edge-case validation
+- Exception expectation testing
+- Date boundary testing
+
+This approach ensures deterministic, fast, and isolated tests aligned with TDD principles.
 
 ---
 
-## Git Workflow
+# Git Workflow
+## Branching Strategy
 
-Branching Strategy:
-- Dev → Development
-- Test → Verified builds
-- Master → Stable release
+- **Dev** → Active development  
+- **Test** → Verified and stable builds  
+- **Master** → Production-ready release  
 
-Pull requests used for controlled merges.
+All merges are performed using Pull Requests.
 
-Versioning:
-- v0.2.0-user-module
+## Version Tags
+- `v0.2.0-user-module`
+- `v0.2.1-user-tests`
+- `v0.3.0-room-module`
+- `v1.0.0-stable-release` (planned)
 
 ---
 
-## Technologies Used
+# Design Patterns Used
+- Strategy Pattern (Billing)
+- Validation Strategy Pattern
+- Facade Pattern
+- Singleton Pattern (DB Connection)
+- Constructor Based Dependency Injection
 
+---
+
+# Technologies Used
 - Java 21+
 - Servlet API
-- JUnit 4.13.2
-- MySQL
 - JDBC
+- MySQL
 - Maven
+- JUnit 4.13.2
+- Postman (API testing)
 
 ---
 
-## Future Modules
-
-- Reservation Management
-- Billing Calculation (Strategy Pattern)
-- Reporting
-- Stored Procedures / Database triggers
+# System Strengths
+- Clean layered architecture
+- SOLID compliant service layer
+- Exception-driven validation
+- Conflict detection algorithm
+- Deterministic unit testing
+- Scalable module design
+- Enterprise-ready structure
 
 ---
 
-Chathura Kavindu Bandara
+# Author
+
+**Chathura Kavindu Bandara**  
+BSc (Hons) Software Engineering  
+CIS6003 – Advanced Programming  
