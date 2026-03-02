@@ -282,4 +282,59 @@ public class ReservationDAOImpl implements ReservationDAO {
             throw new DataAccessException("Error retrieving reservations", e);
         }
     }
+
+    @Override
+    public List<Reservation> findByDateRange(LocalDate from, LocalDate to) {
+        String sql = """
+        SELECT r.reservation_id, r.reservation_no, r.check_in, r.check_out, r.status, r.total_amount, r.created_at,
+               g.guest_id AS g_id, g.name AS g_name, g.email AS g_email, g.phone_number AS g_phone,
+               g.address AS g_address, g.nic AS g_nic, g.created_at AS g_created_at
+        FROM reservations r
+        JOIN guests g ON r.guest_id = g.guest_id
+        WHERE (r.check_in < ? AND r.check_out > ?)   -- overlap rule
+        ORDER BY r.check_in ASC
+    """;
+
+        List<Reservation> out = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDate(1, Date.valueOf(to));
+            ps.setDate(2, Date.valueOf(from));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Reservation r = new Reservation();
+                    r.setReservationId(rs.getInt("reservation_id"));
+                    r.setReservationNo(rs.getString("reservation_no"));
+                    r.setCheckInDate(rs.getDate("check_in").toLocalDate());
+                    r.setCheckOutDate(rs.getDate("check_out").toLocalDate());
+                    r.setStatus(Status.valueOf(rs.getString("status")));
+                    r.setTotalAmount(rs.getBigDecimal("total_amount"));
+                    r.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+
+                    Guest g = new Guest(
+                            rs.getString("g_name"),
+                            rs.getString("g_email"),
+                            rs.getString("g_phone"),
+                            rs.getString("g_address"),
+                            rs.getString("g_nic")
+                    );
+                    g.setGuestId(rs.getInt("g_id"));
+                    Timestamp gCreated = rs.getTimestamp("g_created_at");
+                    if (gCreated != null) g.setCreatedAt(gCreated.toLocalDateTime());
+                    r.setGuest(g);
+
+                    r.setReservationRooms(new ArrayList<>()); // keep empty for report list
+                    out.add(r);
+                }
+            }
+
+            return out;
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error retrieving reservations by date range", e);
+        }
+    }
 }

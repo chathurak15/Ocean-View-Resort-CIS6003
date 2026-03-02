@@ -68,4 +68,12 @@ public class FakeReservationDAO implements ReservationDAO {
         list.sort(Comparator.comparing(Reservation::getReservationId));
         return list;
     }
+
+    @Override
+    public List<Reservation> findByDateRange(LocalDate from, LocalDate to) {
+        return byNo.values().stream().filter(r -> r.getCreatedAt() != null).filter(r -> {
+                        LocalDate d = r.getCreatedAt().toLocalDate();
+                        return (!d.isBefore(from)) && (!d.isAfter(to));
+        }).sorted((a,b) -> b.getCreatedAt().compareTo(a.getCreatedAt())).toList();
+    }
 }

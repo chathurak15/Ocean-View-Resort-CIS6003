@@ -9,17 +9,20 @@ import com.oceanview.exception.BusinessRuleException;
 import com.oceanview.exception.DuplicateResourceException;
 import com.oceanview.exception.ResourceNotFoundException;
 import com.oceanview.facade.impl.ReservationFacadeImpl;
+import com.oceanview.model.Reservation;
 import com.oceanview.model.enums.RoomType;
 import com.oceanview.model.enums.Status;
 import com.oceanview.service.StubGuestService;
 import com.oceanview.service.StubRoomService;
 import com.oceanview.service.billing.BillingStrategy;
 import com.oceanview.service.billing.TestBillingStrategy;
+import com.oceanview.util.TestData;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -166,13 +169,11 @@ public class ReservationFacadeImplTest {
     //GET RESERVATION BY RESERVATION NO
     @Test
     public void getByReservationNo_success() {
-
         CreateReservationDTO dto = new CreateReservationDTO();
         dto.setGuestId(1);
         dto.setCheckInDate(LocalDate.of(2026, 3, 10));
         dto.setCheckOutDate(LocalDate.of(2026, 3, 12));
         dto.setRoomIds(List.of(101));
-
         ReservationDTO saved = reservationFacade.createReservation(dto);
 
         ReservationDTO fetched = reservationFacade.getByReservationNo(saved.getReservationNo());
@@ -272,5 +273,42 @@ public class ReservationFacadeImplTest {
         reservationFacade.completeReservation(" ");
     }
 
+    @Test(expected = BusinessRuleException.class)
+    public void getReservationsByDateRange_shouldThrow_whenFromMissing() {
+        reservationFacade.getReservationsByDateRange(null, "2026-03-10");
+    }
+    @Test(expected = BusinessRuleException.class)
+    public void getReservationsByDateRange_shouldThrow_whenInvalidFormat() {
+        reservationFacade.getReservationsByDateRange("03-01-2026", "2026-03-10");
+    }
+    @Test(expected = BusinessRuleException.class)
+    public void getReservationsByDateRange_shouldThrow_whenFromAfterTo() {
+        reservationFacade.getReservationsByDateRange("2026-03-11", "2026-03-10");
+    }
+    @Test
+    public void getReservationsByDateRange_shouldReturnOnlyInRange() {
+        // seed 3 reservations with createdAt
+        Reservation r1 = TestData.reservation("RES-AAA11111", LocalDateTime.of(2026,3,1,10,0));
+        Reservation r2 = TestData.reservation("RES-BBB22222", LocalDateTime.of(2026,3,5,10,0));
+        Reservation r3 = TestData.reservation("RES-CCC33333", LocalDateTime.of(2026,3,20,10,0));
+        reservationDAO.seed(r1);
+        reservationDAO.seed(r2);
+        reservationDAO.seed(r3);
+        List<ReservationDTO> results = reservationFacade.getReservationsByDateRange("2026-03-01", "2026-03-10");
 
+        assertEquals(2, results.size());
+        assertTrue(results.stream().anyMatch(x -> "RES-AAA11111".equals(x.getReservationNo())));
+        assertTrue(results.stream().anyMatch(x -> "RES-BBB22222".equals(x.getReservationNo())));
+        assertFalse(results.stream().anyMatch(x -> "RES-CCC33333".equals(x.getReservationNo())));
+    }
+    @Test
+    public void getReservationsByDateRange_shouldIncludeBoundaries() {
+        Reservation r1 = TestData.reservation("RES-BOUND1", LocalDateTime.of(2026,3,1,0,0));
+        Reservation r2 = TestData.reservation("RES-BOUND2", LocalDateTime.of(2026,3,10,23,0));
+        reservationDAO.seed(r1);
+        reservationDAO.seed(r2);
+
+        List<ReservationDTO> results = reservationFacade.getReservationsByDateRange("2026-03-01", "2026-03-10");
+        assertEquals(2, results.size());
+    }
 }

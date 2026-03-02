@@ -16,8 +16,10 @@ import com.oceanview.service.RoomService;
 import com.oceanview.service.billing.BillingStrategy;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -135,6 +137,28 @@ public class ReservationFacadeImpl implements ReservationFacade {
         }
         reservation.setStatus(Status.COMPLETED);
         reservationDAO.updateStatus(reservationNo, Status.COMPLETED);
+    }
+
+    @Override
+    public List<ReservationDTO> getReservationsByDateRange(String from, String to) {
+        if (from == null || to == null || from.isBlank() || to.isBlank()) {
+            throw new BusinessRuleException("Both 'from' and 'to' dates are required.");
+        }
+        LocalDate fromDate;
+        LocalDate toDate;
+        try {
+            fromDate = LocalDate.parse(from.trim());
+            toDate = LocalDate.parse(to.trim());
+        } catch (Exception e) {
+            throw new BusinessRuleException("Invalid date format. Use YYYY-MM-DD.");
+        }
+        // inclusive range rule
+        if (fromDate.isAfter(toDate)) {
+            throw new BusinessRuleException("'from' must be <= 'to'.");
+        }
+
+        List<Reservation> reservations = reservationDAO.findByDateRange(fromDate, toDate);
+        return reservations.stream().map(ReservationMapper::toDTO).toList();
     }
 
     private String generateReservationNo() {

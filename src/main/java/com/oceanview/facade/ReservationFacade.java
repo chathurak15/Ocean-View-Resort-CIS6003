@@ -3,6 +3,7 @@ package com.oceanview.facade;
 import com.oceanview.dto.Reservation.CreateReservationDTO;
 import com.oceanview.dto.Reservation.ReservationDTO;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface ReservationFacade {
@@ -11,4 +12,5 @@ public interface ReservationFacade {
     void cancelReservation(String reservationNo);
     List<ReservationDTO> getAllReservations();
     void completeReservation(String reservationNo);
+    List<ReservationDTO> getReservationsByDateRange(String from, String to);
 }

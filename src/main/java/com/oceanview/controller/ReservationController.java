@@ -43,8 +43,24 @@ public class ReservationController extends BaseServlet{
         String pathInfo = req.getPathInfo();
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                List<ReservationDTO> allReservation = reservationFacade.getAllReservations();
-                sendJsonResponse(resp, allReservation);
+                String fromStr = req.getParameter("from");
+                String toStr = req.getParameter("to");
+
+                // Date range mode(use for genarate report)
+                if (fromStr != null || toStr != null) {
+                    if (fromStr == null || toStr == null) {
+                        sendErrorResponse(resp, 400, "Both 'from' and 'to' are required");
+                        return;
+                    }
+                    ReservationDTO[] results = reservationFacade.getReservationsByDateRange(fromStr, toStr)
+                            .toArray(new ReservationDTO[0]);
+
+                    sendJsonResponse(resp, results);
+                    return;
+                }
+                // Normal mode
+                List<ReservationDTO> all = reservationFacade.getAllReservations();
+                sendJsonResponse(resp, all);
                 return;
             }
             String reservationNo = pathInfo.substring(1).trim();
@@ -98,7 +114,6 @@ public class ReservationController extends BaseServlet{
 
             // /api/reservations/{reservationNo}/cancel OR /complete
             String[] parts = pathInfo.substring(1).split("/");
-
             if (parts.length == 2) {
                 String reservationNo = parts[0].trim();
                 String action = parts[1].trim().toLowerCase();
