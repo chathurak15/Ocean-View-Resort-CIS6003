@@ -8,6 +8,7 @@ import com.oceanview.model.enums.RoomType;
 import com.oceanview.util.DBConnection;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -191,6 +192,46 @@ public class RoomDAOImpl implements RoomDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error deleting room", e);
+        }
+    }
+
+    @Override
+    public List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut) {
+
+        String sql = """
+        SELECT rm.room_id, rm.room_name, rm.room_description, rm.room_price, rm.room_type, rm.available
+        FROM rooms rm
+        WHERE rm.available = TRUE
+          AND rm.room_id NOT IN (
+              SELECT rr.room_id
+              FROM reservation_rooms rr
+              JOIN reservations r ON rr.reservation_id = r.reservation_id
+              WHERE r.status = 'CONFIRMED'
+                AND (? < r.check_out AND ? > r.check_in)
+          )
+        ORDER BY rm.room_id ASC
+    """;
+        List<Room> rooms = new ArrayList<>();
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(checkIn));
+            ps.setDate(2, Date.valueOf(checkOut));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Room room = new Room(
+                            rs.getString("room_name"),
+                            rs.getString("room_description"),
+                            rs.getBigDecimal("room_price"),
+                            RoomType.valueOf(rs.getString("room_type")),
+                            rs.getBoolean("available")
+                    );
+                    room.assignId(rs.getInt("room_id"));
+                    rooms.add(room);
+                }
+            }
+            return rooms;
+        } catch (SQLException e) {
+            throw new DataAccessException("Error retrieving available rooms", e);
         }
     }
 }

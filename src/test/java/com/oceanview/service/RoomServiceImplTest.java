@@ -2,17 +2,24 @@ package com.oceanview.service;
 
 import com.oceanview.dao.FakeRoomDAO;
 import com.oceanview.dto.room.CreateRoomDTO;
+import com.oceanview.dto.room.RoomDTO;
 import com.oceanview.dto.room.UpdateRoomDTO;
+import com.oceanview.exception.BusinessRuleException;
 import com.oceanview.exception.DuplicateResourceException;
 import com.oceanview.exception.ResourceNotFoundException;
 import com.oceanview.model.Room;
 import com.oceanview.model.enums.RoomType;
+import com.oceanview.model.enums.Status;
 import com.oceanview.service.impl.RoomServiceImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 public class RoomServiceImplTest {
     private FakeRoomDAO fakeDAO;
@@ -22,15 +29,16 @@ public class RoomServiceImplTest {
     public void setUp() {
         fakeDAO = new FakeRoomDAO();
         service = new RoomServiceImpl(fakeDAO);
+
+        fakeDAO.seed(new Room("R1", "d", new BigDecimal("10000"), RoomType.STANDARD, true));
+        fakeDAO.seed(new Room("R2", "d", new BigDecimal("12000"), RoomType.DELUXE, true));
+        fakeDAO.seed(new Room("R3", "d", new BigDecimal("15000"), RoomType.FAMILY_SUITE, false));
     }
 
     //get all rooms test
     @Test
     public void getAllRooms_shouldReturnAllSeededRooms() {
-        fakeDAO.seed(new Room("A", "d", new BigDecimal("10000"), RoomType.STANDARD, true));
-        fakeDAO.seed(new Room("B", "d", new BigDecimal("15000"), RoomType.DELUXE, true));
-
-        Assert.assertEquals(2, service.getAllRooms().size());
+        assertEquals(3, service.getAllRooms().size());
     }
 
     //create room valid test
@@ -43,7 +51,7 @@ public class RoomServiceImplTest {
         dto.setRoomType(RoomType.DELUXE);
         dto.setAvailable(true);
 
-        Assert.assertNotNull(service.createRoom(dto));
+        assertNotNull(service.createRoom(dto));
     }
     //duplicate room name test
     @Test(expected = DuplicateResourceException.class)
@@ -72,7 +80,7 @@ public class RoomServiceImplTest {
         Room r = new Room("Std 01", "Basic", new BigDecimal("10000"), RoomType.STANDARD, true);
         fakeDAO.seed(r);
 
-        Assert.assertNotNull(service.getRoomById(r.getRoomId()));
+        assertNotNull(service.getRoomById(r.getRoomId()));
     }
     //get room by id test(NotFound exception)
     @Test(expected = ResourceNotFoundException.class)
@@ -92,7 +100,7 @@ public class RoomServiceImplTest {
         dto.setRoomPrice(new BigDecimal("12000"));
         dto.setRoomType(RoomType.STANDARD);
 
-        Assert.assertEquals(
+        assertEquals(
                 "Std 01 Updated", service.updateRoomDetails(existing.getRoomId(), dto).getRoomName()
         );
     }
@@ -148,7 +156,7 @@ public class RoomServiceImplTest {
 
         service.updateRoomStatus(r.getRoomId(), true);
 
-        Assert.assertTrue(fakeDAO.getRoomById(r.getRoomId()).isAvailable());
+        assertTrue(fakeDAO.getRoomById(r.getRoomId()).isAvailable());
     }
 
     //delete room test
@@ -166,4 +174,109 @@ public class RoomServiceImplTest {
         service.deleteRoom(999);
     }
 
+    @Test(expected = BusinessRuleException.class)
+    public void getAvailableRooms_nullCheckIn_shouldThrow() {
+        service.getAvailableRooms(null, LocalDate.now().plusDays(2));
+    }
+
+    @Test(expected = BusinessRuleException.class)
+    public void getAvailableRooms_nullCheckOut_shouldThrow() {
+        service.getAvailableRooms(LocalDate.now().plusDays(1), null);
+    }
+
+    @Test(expected = BusinessRuleException.class)
+    public void getAvailableRooms_invalidRange_sameDay_shouldThrow() {
+        LocalDate d = LocalDate.of(2026, 3, 10);
+        service.getAvailableRooms(d, d);
+    }
+
+    @Test(expected = BusinessRuleException.class)
+    public void getAvailableRooms_invalidRange_checkInAfterCheckOut_shouldThrow() {
+        LocalDate in = LocalDate.of(2026, 3, 12);
+        LocalDate out = LocalDate.of(2026, 3, 10);
+        service.getAvailableRooms(in, out);
+    }
+
+    @Test
+    public void getAvailableRooms_shouldExcludeMaintenanceRooms() {
+        LocalDate in = LocalDate.of(2026, 3, 10);
+        LocalDate out = LocalDate.of(2026, 3, 12);
+
+        List<RoomDTO> available = service.getAvailableRooms(in, out);
+
+        // R3 is maintenance => excluded
+        assertEquals(2, available.size());
+        assertTrue(available.stream().noneMatch(r -> r.getRoomName().equals("R3")));
+    }
+
+    @Test
+    public void getAvailableRooms_shouldExcludeOverlappingConfirmedReservations() {
+        // Create a CONFIRMED reservation that overlaps for room 1 (R1)
+        fakeDAO.seedReservation(
+                1,
+                LocalDate.of(2026, 3, 10),
+                LocalDate.of(2026, 3, 15),
+                Status.CONFIRMED
+        );
+
+        LocalDate in = LocalDate.of(2026, 3, 12);
+        LocalDate out = LocalDate.of(2026, 3, 14);
+
+        List<RoomDTO> available = service.getAvailableRooms(in, out);
+
+        // R1 should be blocked, R2 should be available, R3 maintenance excluded
+        assertEquals(1, available.size());
+        assertEquals("R2", available.get(0).getRoomName());
+    }
+
+    @Test
+    public void getAvailableRooms_shouldNotExcludeCancelledReservations() {
+        // Cancelled reservation should NOT block availability
+        fakeDAO.seedReservation(
+                2,
+                LocalDate.of(2026, 3, 10),
+                LocalDate.of(2026, 3, 15),
+                Status.CANCELLED
+        );
+
+        LocalDate in = LocalDate.of(2026, 3, 12);
+        LocalDate out = LocalDate.of(2026, 3, 14);
+
+        List<RoomDTO> available = service.getAvailableRooms(in, out);
+
+        // R2 should still be available
+        assertTrue(available.stream().anyMatch(r -> r.getRoomName().equals("R2")));
+    }
+
+    @Test
+    public void getAvailableRooms_boundaryCase_checkInEqualsExistingCheckOut_shouldBeAvailable() {
+        // existing booking ends on 15th
+        fakeDAO.seedReservation(
+                1,
+                LocalDate.of(2026, 3, 10),
+                LocalDate.of(2026, 3, 15),
+                Status.CONFIRMED
+        );
+
+        // new booking starts exactly on existing checkOut => NOT overlap
+        LocalDate in = LocalDate.of(2026, 3, 15);
+        LocalDate out = LocalDate.of(2026, 3, 17);
+
+        List<RoomDTO> available = service.getAvailableRooms(in, out);
+
+        // R1 should be available due to boundary rule
+        assertTrue(available.stream().anyMatch(r -> r.getRoomName().equals("R1")));
+    }
+
+    @Test
+    public void getAvailableRooms_shouldReturnRoomDTOsWithIds() {
+        LocalDate in = LocalDate.of(2026, 3, 10);
+        LocalDate out = LocalDate.of(2026, 3, 12);
+
+        List<RoomDTO> available = service.getAvailableRooms(in, out);
+
+        assertFalse(available.isEmpty());
+        assertNotNull(available.get(0).getRoomId());
+    }
 }
+

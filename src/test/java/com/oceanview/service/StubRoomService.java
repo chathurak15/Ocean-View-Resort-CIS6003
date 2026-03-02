@@ -4,6 +4,7 @@ import com.oceanview.dto.room.CreateRoomDTO;
 import com.oceanview.dto.room.RoomDTO;
 import com.oceanview.dto.room.UpdateRoomDTO;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,5 +40,10 @@ public class StubRoomService implements RoomService{
     @Override
     public void deleteRoom(int id) {
 
+    }
+
+    @Override
+    public List<RoomDTO> getAvailableRooms(LocalDate checkIn, LocalDate checkOut) {
+        return List.of();
     }
 }

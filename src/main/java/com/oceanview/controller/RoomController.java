@@ -14,6 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,21 @@ public class RoomController extends BaseServlet {
             if (pathInfo == null || "/".equals(pathInfo)) {
                 List<RoomDTO> allRooms = roomService.getAllRooms();
                 sendJsonResponse(resp, allRooms);
+                return;
+            }
+            if (pathInfo != null && pathInfo.equals("/available")) {
+                String checkInParam = req.getParameter("checkIn");
+                String checkOutParam = req.getParameter("checkOut");
+
+                if (checkInParam == null || checkOutParam == null) {
+                    sendErrorResponse(resp, 400, "checkIn and checkOut query parameters are required");
+                    return;
+                }
+                LocalDate checkIn = LocalDate.parse(checkInParam);
+                LocalDate checkOut = LocalDate.parse(checkOutParam);
+
+                List<RoomDTO> availableRooms = roomService.getAvailableRooms(checkIn, checkOut);
+                sendJsonResponse(resp, availableRooms);
                 return;
             }
             // GET /api/rooms/{id}
