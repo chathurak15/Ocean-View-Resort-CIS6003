@@ -5,18 +5,18 @@ import com.oceanview.model.enums.RoomType;
 import java.math.BigDecimal;
 
 public class RoomDTO {
-    private int roomId;
+    private Integer roomId;
     private String roomName;
     private String roomDescription;
     private BigDecimal roomPrice;
     private RoomType roomType;
     private boolean available;
 
-    public int getRoomId() {
+    public Integer getRoomId() {
         return roomId;
     }
 
-    public void setRoomId(int roomId) {
+    public void setRoomId(Integer roomId) {
         this.roomId = roomId;
     }
 
