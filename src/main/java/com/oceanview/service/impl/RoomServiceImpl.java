@@ -85,8 +85,8 @@ public class RoomServiceImpl implements RoomService {
         if (room.isAvailable() == available) {
             return;
         }
-        if (available) room.markAsAvailable();
-        else room.markAsBooked();
+        if (available) room.markInService();
+        else room.markOutOfService();
 
         roomDAO.updateRoomStatus(id, available);
     }
