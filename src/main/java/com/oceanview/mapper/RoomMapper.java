@@ -37,4 +37,21 @@ public class RoomMapper {
                 dto.isAvailable()
         );
     }
+    public static Room toEntity(RoomDTO dto) {
+        if (dto == null) return null;
+
+        Room room = new Room(
+                dto.getRoomName(),
+                dto.getRoomDescription(),
+                dto.getRoomPrice(),
+                dto.getRoomType(),
+                dto.isAvailable()
+        );
+
+        if (dto.getRoomId() != null) {
+            room.assignId(dto.getRoomId());
+        }
+
+        return room;
+    }
 }

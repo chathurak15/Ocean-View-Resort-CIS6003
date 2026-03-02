@@ -2,6 +2,7 @@ package com.oceanview.dao;
 
 import com.oceanview.model.Room;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface RoomDAO {
@@ -18,4 +19,6 @@ public interface RoomDAO {
     void updateRoomStatus(int roomId, boolean available);
 
     void deleteRoom(int roomId);
+
+    List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut);
 }
