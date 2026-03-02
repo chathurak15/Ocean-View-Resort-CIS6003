@@ -62,10 +62,7 @@ public class ReservationFacadeImpl implements ReservationFacade {
             roomDTOs.add(roomDTO);
         }
         for (RoomDTO roomDTO : roomDTOs) {
-            boolean conflict = reservationDAO.existsOverlappingReservation(
-                    roomDTO.getRoomId(),
-                    dto.getCheckInDate(),
-                    dto.getCheckOutDate()
+            boolean conflict = reservationDAO.existsOverlappingReservation(roomDTO.getRoomId(), dto.getCheckInDate(), dto.getCheckOutDate()
             );
             if (conflict) {
                 throw new DuplicateResourceException("Room not available: " + roomDTO.getRoomName());
@@ -82,19 +79,63 @@ public class ReservationFacadeImpl implements ReservationFacade {
         return ReservationMapper.toDTO(saved);
     }
 
+    //get reservation by reservation number
     @Override
     public ReservationDTO getByReservationNo(String reservationNo) {
-        return null;
+        if (reservationNo == null || reservationNo.isBlank()) {
+            throw new BusinessRuleException("Reservation number is required.");
+        }
+
+        Reservation reservation = reservationDAO.getByReservationNo(reservationNo);
+
+        if (reservation == null) {
+            throw new ResourceNotFoundException("Reservation not found: " + reservationNo);
+        }
+
+        return ReservationMapper.toDTO(reservation);
     }
 
+   //cancel reservation
     @Override
     public void cancelReservation(String reservationNo) {
+        if (reservationNo == null || reservationNo.isBlank()) {
+            throw new BusinessRuleException("Reservation number is required.");
+        }
 
+        Reservation reservation = reservationDAO.getByReservationNo(reservationNo);
+
+        if (reservation == null) {
+            throw new ResourceNotFoundException("Reservation not found: " + reservationNo);
+        }
+        if (reservation.getStatus() == Status.CANCELLED) {
+            throw new BusinessRuleException("Reservation is already cancelled.");
+        }
+        reservation.setStatus(Status.CANCELLED);
+
+        reservationDAO.updateStatus(reservationNo, Status.CANCELLED);
+    }
+
+    //get all reservations
+    @Override
+    public List<ReservationDTO> getAllReservations() {
+        List<Reservation> reservations = reservationDAO.getAllReservations();
+        return reservations.stream().map(ReservationMapper::toDTO).toList();
     }
 
     @Override
-    public List<ReservationDTO> getAllReservations() {
-        return List.of();
+    public void completeReservation(String reservationNo) {
+        if (reservationNo == null || reservationNo.isBlank()) {
+            throw new BusinessRuleException("Reservation number is required.");
+        }
+        Reservation reservation = reservationDAO.getByReservationNo(reservationNo);
+        if (reservation == null) {
+            throw new ResourceNotFoundException("Reservation not found: " + reservationNo);
+        }
+        if (reservation.getStatus() == Status.COMPLETED) {
+            throw new BusinessRuleException("Reservation is already COMPLETED.");
+        }
+        reservation.setStatus(Status.COMPLETED);
+        reservationDAO.updateStatus(reservationNo, Status.COMPLETED);
     }
 
     private String generateReservationNo() {

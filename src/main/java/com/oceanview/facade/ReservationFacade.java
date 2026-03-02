@@ -10,4 +10,5 @@ public interface ReservationFacade {
     ReservationDTO getByReservationNo(String reservationNo);
     void cancelReservation(String reservationNo);
     List<ReservationDTO> getAllReservations();
+    void completeReservation(String reservationNo);
 }

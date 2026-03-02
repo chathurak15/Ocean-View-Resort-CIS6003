@@ -1,15 +1,21 @@
 package com.oceanview.dao.impl;
 
 import com.oceanview.dao.ReservationDAO;
+import com.oceanview.exception.DataAccessException;
+import com.oceanview.model.Guest;
 import com.oceanview.model.Reservation;
 import com.oceanview.model.ReservationRoom;
+import com.oceanview.model.Room;
+import com.oceanview.model.enums.RoomType;
+import com.oceanview.model.enums.Status;
 import com.oceanview.util.DBConnection;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReservationDAOImpl implements ReservationDAO {
-
     //create reservation
     @Override
     public Reservation createReservation(Reservation reservation) {
@@ -102,6 +108,7 @@ public class ReservationDAOImpl implements ReservationDAO {
         }
     }
 
+    //exists overlapping reservation
     @Override
     public boolean existsOverlappingReservation(Integer roomId, LocalDate checkInDate, LocalDate checkOutDate) {
         String sql =
@@ -123,7 +130,156 @@ public class ReservationDAOImpl implements ReservationDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Error checking room availability", e);
+            throw new DataAccessException("Error checking room availability", e);
+        }
+    }
+
+    //get reservation by reservation no
+    @Override
+    public Reservation getByReservationNo(String reservationNo) {
+        String sql = """
+            SELECT 
+                r.reservation_id, r.reservation_no, r.guest_id, r.check_in, r.check_out, r.status, r.total_amount, r.created_at,
+                rr.rate_per_night, rr.line_total,
+                rm.room_id, rm.room_name, rm.room_description, rm.room_price, rm.room_type, rm.available,
+                g.guest_id AS g_id, g.name AS g_name, g.email AS g_email, g.phone_number AS g_phone,
+                g.address AS g_address, g.nic AS g_nic, g.created_at AS g_created_at
+            FROM reservations r
+            JOIN reservation_rooms rr ON r.reservation_id = rr.reservation_id
+            JOIN rooms rm ON rr.room_id = rm.room_id
+            JOIN guests g ON r.guest_id = g.guest_id
+            WHERE r.reservation_no = ?
+        """;
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, reservationNo);
+            try (ResultSet rs = ps.executeQuery()) {
+                Reservation reservation = null;
+                List<ReservationRoom> reservationRooms = new ArrayList<>();
+                while (rs.next()) {
+                    if (reservation == null) {
+                        reservation = new Reservation();
+                        reservation.setReservationId(rs.getInt("reservation_id"));
+                        reservation.setReservationNo(rs.getString("reservation_no"));
+                        reservation.setCheckInDate(rs.getDate("check_in").toLocalDate());
+                        reservation.setCheckOutDate(rs.getDate("check_out").toLocalDate());
+                        reservation.setStatus(Status.valueOf(rs.getString("status")));
+                        reservation.setTotalAmount(rs.getBigDecimal("total_amount"));
+                        reservation.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+
+                        // Map guest from JOIN (NO GuestDAO call)
+                        Guest guest = new Guest(
+                                rs.getString("g_name"),
+                                rs.getString("g_email"),
+                                rs.getString("g_phone"),
+                                rs.getString("g_address"),
+                                rs.getString("g_nic")
+                        );
+                        guest.setGuestId(rs.getInt("g_id"));
+                        Timestamp gCreated = rs.getTimestamp("g_created_at");
+                        if (gCreated != null) {
+                            guest.setCreatedAt(gCreated.toLocalDateTime());
+                        }
+                        reservation.setGuest(guest);
+                    }
+
+                    // Map room
+                    Room room = new Room(
+                            rs.getString("room_name"),
+                            rs.getString("room_description"),
+                            rs.getBigDecimal("room_price"),
+                            RoomType.valueOf(rs.getString("room_type")),
+                            rs.getBoolean("available")
+                    );
+                    room.assignId(rs.getInt("room_id"));
+
+                    // Map reservation-room line
+                    ReservationRoom rr = new ReservationRoom();
+                    rr.setReservation(reservation);
+                    rr.setRoom(room);
+                    rr.setRatePerNight(rs.getBigDecimal("rate_per_night"));
+                    rr.setLineTotal(rs.getBigDecimal("line_total"));
+
+                    reservationRooms.add(rr);
+                }
+
+                if (reservation != null) {
+                    reservation.setReservationRooms(reservationRooms);
+                }
+                return reservation;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error retrieving reservation", e);
+        }
+    }
+
+    //update reservation status
+    @Override
+    public void updateStatus(String reservationNo, Status status) {
+        String sql = "UPDATE reservations SET status = ? WHERE reservation_no = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, status.name());
+            ps.setString(2, reservationNo);
+            int affected = ps.executeUpdate();
+
+            if (affected == 0) {
+                throw new DataAccessException("Reservation not found for update");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error updating reservation status", e);
+        }
+    }
+
+    //get all reservations
+    @Override
+    public List<Reservation> getAllReservations() {
+
+        String sql = """
+            SELECT 
+                r.reservation_id, r.reservation_no, r.guest_id, r.check_in, r.check_out, r.status, r.total_amount, r.created_at,
+                g.guest_id AS g_id, g.name AS g_name, g.email AS g_email, g.phone_number AS g_phone,
+                g.address AS g_address, g.nic AS g_nic, g.created_at AS g_created_at
+            FROM reservations r
+            JOIN guests g ON r.guest_id = g.guest_id
+            ORDER BY r.created_at DESC
+        """;
+
+        List<Reservation> reservations = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Reservation reservation = new Reservation();
+                reservation.setReservationId(rs.getInt("reservation_id"));
+                reservation.setReservationNo(rs.getString("reservation_no"));
+                reservation.setCheckInDate(rs.getDate("check_in").toLocalDate());
+                reservation.setCheckOutDate(rs.getDate("check_out").toLocalDate());
+                reservation.setStatus(Status.valueOf(rs.getString("status")));
+                reservation.setTotalAmount(rs.getBigDecimal("total_amount"));
+                reservation.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                reservation.setReservationRooms(new ArrayList<>());
+
+                Guest guest = new Guest(rs.getString("g_name"), rs.getString("g_email"), rs.getString("g_phone"), rs.getString("g_address"), rs.getString("g_nic"));
+                guest.setGuestId(rs.getInt("g_id"));
+
+                Timestamp gCreated = rs.getTimestamp("g_created_at");
+                if (gCreated != null) {
+                    guest.setCreatedAt(gCreated.toLocalDateTime());
+                }
+                reservation.setGuest(guest);
+
+                reservations.add(reservation);
+            }
+
+            return reservations;
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error retrieving reservations", e);
         }
     }
 }
