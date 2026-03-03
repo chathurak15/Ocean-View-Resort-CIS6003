@@ -35,7 +35,7 @@
             <span>Guests</span>
         </a>
 
-        <a href="dashboard.jsp?view=reservations" id="nav-reservations" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-colors">
+        <a href="reservations.jsp" id="nav-reservations" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-colors">
             <i class="fa-solid fa-calendar-check w-5 text-center"></i>
             <span>Reservations</span>
         </a>
@@ -64,10 +64,11 @@
     document.addEventListener("DOMContentLoaded", () => {
         const path = window.location.pathname;
         const links = {
-            'dashboard.jsp': 'nav-dashboard',
-            'rooms.jsp':     'nav-rooms',
-            'users.jsp':     'nav-users',
-            'guests.jsp':    'nav-guests',
+            'dashboard.jsp':    'nav-dashboard',
+            'rooms.jsp':        'nav-rooms',
+            'users.jsp':        'nav-users',
+            'guests.jsp':       'nav-guests',
+            'reservations.jsp': 'nav-reservations',
         };
 
         const page = path.split('/').pop();
