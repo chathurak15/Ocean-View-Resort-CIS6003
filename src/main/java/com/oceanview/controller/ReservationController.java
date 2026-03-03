@@ -9,7 +9,7 @@ import com.oceanview.facade.impl.ReservationFacadeImpl;
 import com.oceanview.service.GuestService;
 import com.oceanview.service.RoomService;
 import com.oceanview.service.billing.BillingStrategy;
-import com.oceanview.service.billing.RoomTypeSurchargeBillingStrategy;
+import com.oceanview.service.billing.BillingStrategyFactory;
 import com.oceanview.service.impl.GuestServiceImpl;
 import com.oceanview.service.impl.RoomServiceImpl;
 import com.oceanview.validation.ValidatorContext;
@@ -22,10 +22,16 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "ReservationServlet", urlPatterns = {"/api/reservations/*"})
-public class ReservationController extends BaseServlet{
+@WebServlet(name = "ReservationServlet", urlPatterns = { "/api/reservations/*" })
+public class ReservationController extends BaseServlet {
     private final ValidatorContext validatorContext = new ValidatorContext();
     private ReservationFacade reservationFacade;
+
+    public ReservationController() {
+    }
+    public ReservationController(ReservationFacade reservationFacade) {
+        this.reservationFacade = reservationFacade;
+    }
 
     @Override
     public void init() {
@@ -34,7 +40,7 @@ public class ReservationController extends BaseServlet{
         GuestService guestService = new GuestServiceImpl();
         RoomService roomService = new RoomServiceImpl();
         ReservationDAO reservationDAO = new ReservationDAOImpl();
-        BillingStrategy billingStrategy = new RoomTypeSurchargeBillingStrategy();
+        BillingStrategy billingStrategy = BillingStrategyFactory.create(BillingStrategyFactory.BillingType.SURCHARGE);
         reservationFacade = new ReservationFacadeImpl(guestService, roomService, reservationDAO, billingStrategy);
     }
 
