@@ -67,7 +67,7 @@
         </form>
 
         <div class="mt-8 text-center text-sm text-gray-500">
-            <p>Admin: Use credentials from your database.</p>
+            <p>Use credentials</p>
         </div>
     </div>
 
