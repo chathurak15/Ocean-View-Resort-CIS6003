@@ -20,7 +20,7 @@
         </a>
 
         <!-- Users (Admin Only) -->
-        <a href="dashboard.jsp?view=users" id="nav-users" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-colors">
+        <a href="users.jsp" id="nav-users" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-colors">
             <i class="fa-solid fa-users w-5 text-center"></i>
             <span>Users Panel</span>
         </a>
@@ -30,7 +30,7 @@
             <span>Rooms</span>
         </a>
 
-        <a href="dashboard.jsp?view=guests" id="nav-guests" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-colors">
+        <a href="guests.jsp" id="nav-guests" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-colors">
             <i class="fa-solid fa-address-card w-5 text-center"></i>
             <span>Guests</span>
         </a>
@@ -65,8 +65,9 @@
         const path = window.location.pathname;
         const links = {
             'dashboard.jsp': 'nav-dashboard',
-            'rooms.jsp': 'nav-rooms',
-            // Simple query logic as fallback for SPAs if used
+            'rooms.jsp':     'nav-rooms',
+            'users.jsp':     'nav-users',
+            'guests.jsp':    'nav-guests',
         };
 
         const page = path.split('/').pop();

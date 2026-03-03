@@ -64,18 +64,18 @@
     <script src="assets/js/api.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-             // Fetch dashboard metrics
-             const loader = document.getElementById('loader');
-             loader.classList.remove('hidden');
-             try {
+            // Dashboard metrics
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+            try {
                 const rooms = await fetchAPI('/rooms/');
-                if(rooms) document.getElementById('dashTotalRooms').textContent = rooms.length;
-             } catch(e) { console.error(e) }
-             try {
-                const guests = await fetchAPI('/guests');
-                if(guests) document.getElementById('dashActiveGuests').textContent = guests.length;
-             } catch(e) { console.error(e) }
-             loader.classList.add('hidden');
+                if (rooms) document.getElementById('dashTotalRooms').textContent = rooms.length;
+            } catch(e) { console.error(e); }
+            try {
+                const guests = await fetchAPI('/guests/');
+                if (guests) document.getElementById('dashActiveGuests').textContent = guests.length;
+            } catch(e) { console.error(e); }
+            loader.classList.add('hidden');
         });
     </script>
 </body>
