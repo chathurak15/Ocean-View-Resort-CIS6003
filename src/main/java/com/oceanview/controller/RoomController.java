@@ -18,10 +18,20 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "RoomServlet", urlPatterns = {"/api/rooms/*"})
+@WebServlet(name = "RoomServlet", urlPatterns = { "/api/rooms/*" })
 public class RoomController extends BaseServlet {
-    private final RoomService roomService = new RoomServiceImpl();
+    private final RoomService roomService;
     private final ValidatorContext validatorContext = new ValidatorContext();
+
+    // default constructor
+    public RoomController() {
+        this.roomService = new RoomServiceImpl();
+    }
+
+    // constructor injection used for testing
+    public RoomController(RoomService roomService) {
+        this.roomService = roomService;
+    }
 
     @Override
     public void init() {
@@ -29,7 +39,7 @@ public class RoomController extends BaseServlet {
         validatorContext.register(UpdateRoomDTO.class, new UpdateRoomValidationStrategy());
     }
 
-    //get all rooms
+    // get all rooms
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
@@ -64,7 +74,7 @@ public class RoomController extends BaseServlet {
         }
     }
 
-    //create room
+    // create room
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
@@ -90,7 +100,7 @@ public class RoomController extends BaseServlet {
         }
     }
 
-    //update room
+    // update room
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
@@ -102,8 +112,7 @@ public class RoomController extends BaseServlet {
             int id = Integer.parseInt(pathInfo.substring(1));
             UpdateRoomDTO dto = mapper.readValue(req.getReader(), UpdateRoomDTO.class);
 
-            Map<String, String> errors =
-                    validatorContext.validate(dto, UpdateRoomDTO.class);
+            Map<String, String> errors = validatorContext.validate(dto, UpdateRoomDTO.class);
 
             if (!errors.isEmpty()) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -118,7 +127,7 @@ public class RoomController extends BaseServlet {
         }
     }
 
-    //delete room
+    // delete room
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
@@ -136,7 +145,7 @@ public class RoomController extends BaseServlet {
         }
     }
 
-    //update room status
+    // update room status
     @Override
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
