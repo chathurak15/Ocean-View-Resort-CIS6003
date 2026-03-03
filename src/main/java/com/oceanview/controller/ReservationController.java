@@ -27,6 +27,12 @@ public class ReservationController extends BaseServlet {
     private final ValidatorContext validatorContext = new ValidatorContext();
     private ReservationFacade reservationFacade;
 
+    public ReservationController() {
+    }
+    public ReservationController(ReservationFacade reservationFacade) {
+        this.reservationFacade = reservationFacade;
+    }
+
     @Override
     public void init() {
         validatorContext.register(CreateReservationDTO.class, new CreateReservationValidationStrategy());

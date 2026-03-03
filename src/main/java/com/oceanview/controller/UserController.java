@@ -1,4 +1,5 @@
 package com.oceanview.controller;
+
 import com.oceanview.dto.user.LoginRequestDTO;
 import com.oceanview.dto.user.RegisterDTO;
 import com.oceanview.dto.user.UpdateStatusDTO;
@@ -12,12 +13,21 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "UserServlet", urlPatterns = {"/api/users/*"})
+@WebServlet(name = "UserServlet", urlPatterns = { "/api/users/*" })
 public class UserController extends BaseServlet {
 
-    private final UserService userService = new UserServiceImpl();
+    private final UserService userService;
 
-    //get all users
+    // default constructor
+    public UserController() {
+        this.userService = new UserServiceImpl();
+    }
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    // get all users
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
@@ -30,12 +40,12 @@ public class UserController extends BaseServlet {
         }
     }
 
-    //create user and login user
+    // create user and login user
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
         try {
-            //login user
+            // login user
             if ("/login".equals(pathInfo)) {
                 LoginRequestDTO loginReq = mapper.readValue(req.getReader(), LoginRequestDTO.class);
                 UserDTO userDTO = userService.authenticate(loginReq);
@@ -48,7 +58,7 @@ public class UserController extends BaseServlet {
                 return;
             }
 
-            //create user
+            // create user
             if ("/register".equals(pathInfo)) {
                 RegisterDTO registerDTO = mapper.readValue(req.getReader(), RegisterDTO.class);
                 UserDTO created = userService.createUser(registerDTO);
@@ -68,7 +78,7 @@ public class UserController extends BaseServlet {
         }
     }
 
-    //delete user
+    // delete user
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();

@@ -17,16 +17,24 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(name = "GuestServlet", urlPatterns = {"/api/guests/*"})
-public class GuestController extends BaseServlet{
-    private final GuestService guestService = new GuestServiceImpl();
+@WebServlet(name = "GuestServlet", urlPatterns = { "/api/guests/*" })
+public class GuestController extends BaseServlet {
+    private GuestService guestService;
     private final ValidatorContext validatorContext = new ValidatorContext();
+
+    public GuestController() {
+        this.guestService = new GuestServiceImpl();
+    }
+
+    public GuestController(GuestService guestService) {
+        this.guestService = guestService;
+    }
 
     public void init() {
         validatorContext.register(CreateGuestDTO.class, new CreateGuestValidationStrategy());
     }
 
-    //get all guests & search guests
+    // get all guests & search guests
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
         try {
@@ -35,7 +43,7 @@ public class GuestController extends BaseServlet{
                 sendJsonResponse(resp, allGuests);
                 return;
             }
-            //search endpoint - /guests/search?nic=... OR ?phone=... OR ?id=...
+            // search endpoint - /guests/search?nic=... OR ?phone=... OR ?id=...
             if (pathInfo != null && pathInfo.startsWith("/search")) {
                 handleSearch(req, resp);
                 return;
@@ -44,14 +52,14 @@ public class GuestController extends BaseServlet{
             GuestDTO guestDTO = guestService.getGuestById(id);
             sendJsonResponse(resp, guestDTO);
 
-        }catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             handleException(resp, new IllegalArgumentException("Invalid guest id in URL", e));
         } catch (Exception e) {
             handleException(resp, e);
         }
     }
 
-    //add new guest
+    // add new guest
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             String pathInfo = req.getPathInfo();
@@ -76,7 +84,7 @@ public class GuestController extends BaseServlet{
         }
     }
 
-    //update guest
+    // update guest
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             String pathInfo = req.getPathInfo();
@@ -100,7 +108,7 @@ public class GuestController extends BaseServlet{
 
     }
 
-    //delete guest
+    // delete guest
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
@@ -119,7 +127,7 @@ public class GuestController extends BaseServlet{
         }
     }
 
-    //handle search guests method (search guest by id, nic, or phone one at a time)
+    // handle search guests method (search guest by id, nic, or phone one at a time)
     private void handleSearch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String idParam = req.getParameter("id");
         String nicParam = req.getParameter("nic");
