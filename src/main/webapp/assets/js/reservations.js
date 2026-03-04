@@ -1,11 +1,9 @@
-// reservations.js — Reservation Management Module
 const ReservationsModule = {
 
     _selectedRooms: new Map(),
     _guestId: null,
     _guestName: '',
 
-    // Init
     init: async () => {
         const curUserStr = sessionStorage.getItem('currentUser');
         const curUser    = curUserStr ? JSON.parse(curUserStr) : {};
@@ -16,7 +14,6 @@ const ReservationsModule = {
         await ReservationsModule.loadReservations();
     },
 
-    // Layout
     renderLayout: (container, isAdmin) => {
         const reportTab = isAdmin ? `
             <button id="tabReport" onclick="ReservationsModule.switchTab('report')"
@@ -162,7 +159,6 @@ const ReservationsModule = {
         }
     },
 
-    // Load All Reservations
     loadReservations: async () => {
         showLoader(true);
         try {
@@ -177,7 +173,6 @@ const ReservationsModule = {
         }
     },
 
-    // Render Table
     renderTable: (list, tbodyId, showActions) => {
         const tbody = document.getElementById(tbodyId);
         if (!list || list.length === 0) {
@@ -227,13 +222,12 @@ const ReservationsModule = {
                         <i class="fa-solid ${s.icon} mr-1"></i>${r.status}
                     </span>
                 </td>
-                <td class="px-5 py-4 text-right font-semibold text-emerald-600">$${parseFloat(r.totalAmount || 0).toFixed(2)}</td>
+                <td class="px-5 py-4 text-right font-semibold text-emerald-600">LKR ${parseFloat(r.totalAmount || 0).toFixed(2)}</td>
                 <td class="px-5 py-4 text-right space-x-1 whitespace-nowrap">${actionBtns}</td>
             </tr>`;
         }).join('');
     },
 
-    // Status Actions
     changeStatus: async (reservationNo, action) => {
         const label = action === 'cancel' ? 'Cancel' : 'Complete';
         if (!confirm(`${label} reservation ${reservationNo}?`)) return;
@@ -247,8 +241,7 @@ const ReservationsModule = {
         }
     },
 
-    //Report
-    _reportData: [],  // store last report for export
+    _reportData: [],
 
     generateReport: async () => {
         const from = document.getElementById('reportFrom').value;
@@ -264,8 +257,7 @@ const ReservationsModule = {
             ReservationsModule._reportTo   = to;
 
             const statsEl   = document.getElementById('reportStats');
-            // ✅ Revenue: only COMPLETED reservations count
-            const revenue   = list.filter(r => r.status === 'COMPLETED')
+            const revenue = list.filter(r => r.status === 'COMPLETED')
                                   .reduce((s, r) => s + parseFloat(r.totalAmount || 0), 0);
             const confirmed = list.filter(r => r.status === 'CONFIRMED').length;
             const completed = list.filter(r => r.status === 'COMPLETED').length;
@@ -275,7 +267,7 @@ const ReservationsModule = {
                 { label: 'Total Reservations', val: list.length,                icon: 'fa-calendar-check', col: 'blue'   },
                 { label: 'Confirmed',           val: confirmed,                  icon: 'fa-clock',          col: 'indigo' },
                 { label: 'Completed',           val: completed,                  icon: 'fa-check-circle',   col: 'emerald'},
-                { label: 'Revenue (Completed)', val: `$${revenue.toFixed(2)}`,   icon: 'fa-dollar-sign',    col: 'amber'  },
+                { label: 'Revenue (Completed)', val: `LKR ${revenue.toFixed(2)}`,   icon: 'fa-money-bill-wave',    col: 'amber'  },
             ].map(st => `
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-${st.col}-100 flex items-center justify-center">
@@ -301,7 +293,6 @@ const ReservationsModule = {
         }
     },
 
-    //Export CSV
     exportCSV: () => {
         const list = ReservationsModule._reportData;
         if (!list || !list.length) { alert('Generate a report first.'); return; }
@@ -330,7 +321,6 @@ const ReservationsModule = {
         URL.revokeObjectURL(url);
     },
 
-    //Export Report PDF
     exportReportPDF: () => {
         const list = ReservationsModule._reportData;
         if (!list || !list.length) { alert('Generate a report first.'); return; }
@@ -349,7 +339,7 @@ const ReservationsModule = {
                 <td>${fmt(r.checkOutDate)}</td>
                 <td>${(r.rooms || []).map(rm => rm.roomName).join(', ') || '—'}</td>
                 <td><span class="status-${(r.status || '').toLowerCase()}">${r.status}</span></td>
-                <td style="text-align:right">$${parseFloat(r.totalAmount || 0).toFixed(2)}</td>
+                <td style="text-align:right">LKR ${parseFloat(r.totalAmount || 0).toFixed(2)}</td>
             </tr>`).join('');
 
         const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -377,7 +367,7 @@ const ReservationsModule = {
                 @media print { body { padding: 16px; } }
             </style></head><body>
             <div class="header">
-                <div><div class="resort-name">🌊 Ocean View Resort</div><div class="resort-sub">Reservation Management System</div></div>
+                <div><div class="resort-name">Ocean View Resort</div><div class="resort-sub">Reservation Management System</div></div>
                 <div class="report-title">
                     <strong>RESERVATION REPORT</strong><br>
                     Period: ${fmt(from)} — ${fmt(to)}<br>
@@ -388,7 +378,7 @@ const ReservationsModule = {
                 <div class="stat"><div class="stat-label">Total</div><div class="stat-val">${list.length}</div></div>
                 <div class="stat"><div class="stat-label">Confirmed</div><div class="stat-val">${list.filter(r=>r.status==='CONFIRMED').length}</div></div>
                 <div class="stat"><div class="stat-label">Completed</div><div class="stat-val">${list.filter(r=>r.status==='COMPLETED').length}</div></div>
-                <div class="stat"><div class="stat-label">Revenue (Completed)</div><div class="stat-val revenue">$${revenue.toFixed(2)}</div></div>
+                <div class="stat"><div class="stat-label">Revenue (Completed)</div><div class="stat-val revenue">LKR ${revenue.toFixed(2)}</div></div>
             </div>
             <table><thead><tr><th>Ref No.</th><th>Guest</th><th>Check In</th><th>Check Out</th><th>Rooms</th><th>Status</th><th>Total</th></tr></thead>
             <tbody>${rows}</tbody></table>
@@ -400,7 +390,6 @@ const ReservationsModule = {
         win.document.close();
     },
 
-    //View Single Reservation
     viewReservation: async (reservationNo) => {
         const modal        = document.getElementById('resModal');
         const modalContent = document.getElementById('resModalContent');
@@ -419,7 +408,6 @@ const ReservationsModule = {
         setTimeout(() => { modal.classList.remove('opacity-0'); modalContent.classList.remove('scale-95'); }, 10);
 
         try {
-            // GET /api/reservations/{reservationNo}
             const r   = await fetchAPI(`/reservations/${reservationNo}`);
             const fmt = d => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '—';
             const nights = r.checkInDate && r.checkOutDate
@@ -435,8 +423,8 @@ const ReservationsModule = {
                 <tr class="border-b border-gray-100">
                     <td class="py-2 text-gray-800 font-medium">${rm.roomName}</td>
                     <td class="py-2 text-center text-gray-500">${nights} night${nights!==1?'s':''}</td>
-                    <td class="py-2 text-right text-gray-600">$${parseFloat(rm.ratePerNight||0).toFixed(2)}</td>
-                    <td class="py-2 text-right font-semibold text-gray-800">$${parseFloat(rm.lineTotal||0).toFixed(2)}</td>
+                    <td class="py-2 text-right text-gray-600">LKR ${parseFloat(rm.ratePerNight||0).toFixed(2)}</td>
+                    <td class="py-2 text-right font-semibold text-gray-800">LKR ${parseFloat(rm.lineTotal||0).toFixed(2)}</td>
                 </tr>`).join('');
 
             modalContent.innerHTML = `
@@ -486,7 +474,7 @@ const ReservationsModule = {
                         </div>
                         <div class="px-4 py-3 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
                             <span class="text-sm font-semibold text-gray-700">Total Amount</span>
-                            <span class="text-xl font-black text-emerald-600">$${parseFloat(r.totalAmount||0).toFixed(2)}</span>
+                            <span class="text-xl font-black text-emerald-600">LKR ${parseFloat(r.totalAmount||0).toFixed(2)}</span>
                         </div>
                     </div>
 
@@ -505,7 +493,6 @@ const ReservationsModule = {
         }
     },
 
-    // Download Bill (opens printable page in new tab)
     downloadBill: (r) => {
         const fmt = d => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '—';
         const nights = r.checkInDate && r.checkOutDate
@@ -515,8 +502,8 @@ const ReservationsModule = {
             <tr>
                 <td>${rm.roomName}</td>
                 <td style="text-align:center">${nights}</td>
-                <td style="text-align:right">$${parseFloat(rm.ratePerNight||0).toFixed(2)}</td>
-                <td style="text-align:right">$${parseFloat(rm.lineTotal||0).toFixed(2)}</td>
+                <td style="text-align:right">LKR ${parseFloat(rm.ratePerNight||0).toFixed(2)}</td>
+                <td style="text-align:right">LKR ${parseFloat(rm.lineTotal||0).toFixed(2)}</td>
             </tr>`).join('');
 
         const statusColor = { CONFIRMED:'#1d4ed8', COMPLETED:'#059669', CANCELLED:'#dc2626' };
@@ -595,7 +582,7 @@ const ReservationsModule = {
                         <thead><tr><th>Room</th><th>Nights</th><th>Rate/Night</th><th>Subtotal</th></tr></thead>
                         <tbody>
                             ${roomRows}
-                            <tr class="total-row"><td colspan="3" style="text-align:right;font-size:13px">Total Amount</td><td style="text-align:right">$${parseFloat(r.totalAmount||0).toFixed(2)}</td></tr>
+                            <tr class="total-row"><td colspan="3" style="text-align:right;font-size:13px">Total Amount</td><td style="text-align:right">LKR ${parseFloat(r.totalAmount||0).toFixed(2)}</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -622,7 +609,6 @@ const ReservationsModule = {
         win.document.close();
     },
 
-    // New Reservation Wizard
     openNewReservationWizard: () => {
         ReservationsModule._selectedRooms = new Map();
         ReservationsModule._guestId       = null;
@@ -846,7 +832,7 @@ const ReservationsModule = {
                             <div class="text-xs text-gray-400 uppercase tracking-wide mt-0.5">${r.roomType || 'Standard'}</div>
                         </div>
                         <div class="text-right">
-                            <div class="font-bold text-emerald-600 text-sm">$${parseFloat(r.roomPrice).toFixed(2)}</div>
+                            <div class="font-bold text-emerald-600 text-sm">LKR ${parseFloat(r.roomPrice).toFixed(2)}</div>
                             <div class="text-xs text-gray-400">/night</div>
                         </div>
                     </div>
@@ -909,12 +895,12 @@ const ReservationsModule = {
             total += line;
             return `<div class="flex justify-between text-gray-600">
                 <span>${r.roomName} × ${nights} night${nights !== 1 ? 's' : ''}</span>
-                <span>$${line.toFixed(2)}</span>
+                <span>LKR ${line.toFixed(2)}</span>
             </div>`;
         });
 
         document.getElementById('priceLines').innerHTML = lines.join('');
-        document.getElementById('priceTotal').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('priceTotal').textContent = `LKR ${total.toFixed(2)}`;
         summaryEl.classList.remove('hidden');
     },
 
@@ -969,12 +955,8 @@ const ReservationsModule = {
         const btn  = document.getElementById('toggleNewGuestBtn');
         const hidden = form.classList.toggle('hidden');
         btn.textContent = hidden ? '+ Register new guest instead' : '– Hide new guest form';
-        if (hidden) {
-            // If hiding, clear guestId only if we were in new-guest mode
-        }
     },
 
-    // Add New Guest — explicit button action (registers guest first, then shows confirmation card)
     addNewGuest: async () => {
         const ngName  = document.getElementById('ngName').value.trim();
         const ngEmail = document.getElementById('ngEmail').value.trim();
@@ -997,7 +979,6 @@ const ReservationsModule = {
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
 
         try {
-            // POST /api/guests/
             const created = await fetchAPI('/guests/', 'POST', {
                 name: ngName, email: ngEmail, phoneNumber: ngPhone, nic: ngNic, address: ngAddr
             });
@@ -1033,7 +1014,6 @@ const ReservationsModule = {
         }
     },
 
-    // Submit
     submitReservation: async () => {
         const errEl  = document.getElementById('wizardError');
         const btn    = document.getElementById('submitResBtn');
@@ -1049,7 +1029,6 @@ const ReservationsModule = {
         let guestId = ReservationsModule._guestId;
 
         if (!guestId) {
-            // If new guest form is still open and not yet submitted, remind them
             const formVisible = !document.getElementById('newGuestForm').classList.contains('hidden');
             errEl.textContent = formVisible
                 ? 'Please click \"Add Guest\" first to register the new guest, then confirm the reservation.'
@@ -1072,8 +1051,7 @@ const ReservationsModule = {
             const result = await fetchAPI('/reservations/', 'POST', payload);
             ReservationsModule.closeModal();
             await ReservationsModule.loadReservations();
-            // Show success toast
-            ReservationsModule.showToast(`Reservation ${result.reservationNo} confirmed! Total: $${parseFloat(result.totalAmount || 0).toFixed(2)}`, 'success');
+            ReservationsModule.showToast(`Reservation ${result.reservationNo} confirmed! Total: LKR ${parseFloat(result.totalAmount || 0).toFixed(2)}`, 'success');
         } catch (e) {
             errEl.textContent = 'Reservation failed: ' + e.message;
             errEl.classList.remove('hidden');
@@ -1082,7 +1060,6 @@ const ReservationsModule = {
         }
     },
 
-    //Toast Notification
     showToast: (msg, type = 'success') => {
         const toast = document.createElement('div');
         const colors = type === 'success'

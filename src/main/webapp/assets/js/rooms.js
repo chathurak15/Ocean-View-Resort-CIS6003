@@ -1,5 +1,5 @@
 const RoomsModule = {
-    _cache: new Map(), // stores room objects by id
+    _cache: new Map(),
     init: async () => {
         const container = document.getElementById('viewContainer');
         const curUserStr = sessionStorage.getItem('currentUser');
@@ -108,7 +108,6 @@ const RoomsModule = {
             document.getElementById('filterCheckIn').value = '';
             document.getElementById('filterCheckOut').value = '';
 
-            // GET /api/rooms/
             const rooms = await fetchAPI('/rooms/');
             RoomsModule.renderTable(rooms);
         } catch (error) {
@@ -123,9 +122,8 @@ const RoomsModule = {
         if (!id) return;
         showLoader(true);
         try {
-            // GET /api/rooms/{id}
             const room = await fetchAPI(`/rooms/${id}`);
-            RoomsModule.renderTable([room]); // Render as an array of 1
+            RoomsModule.renderTable([room]);
         } catch (error) {
             RoomsModule.renderError('Room not found. ' + error.message);
         } finally {
@@ -144,7 +142,6 @@ const RoomsModule = {
 
         showLoader(true);
         try {
-            // GET /api/rooms/available?checkIn=...&checkOut=...
             const rooms = await fetchAPI(`/rooms/available?checkIn=${checkIn}&checkOut=${checkOut}`);
             RoomsModule.renderTable(rooms);
         } catch (error) {
@@ -161,7 +158,6 @@ const RoomsModule = {
             return;
         }
 
-        // Cache room objects so showForm can look them up safely by id
         RoomsModule._cache.clear();
         rooms.forEach(r => RoomsModule._cache.set(r.id || r.roomId, r));
 
@@ -178,7 +174,7 @@ const RoomsModule = {
                     ${r.roomDescription || '<span class="italic text-gray-400">No description</span>'}
                 </td>
                 <td class="px-6 py-4 font-medium text-emerald-600">
-                    $${parseFloat(r.roomPrice || r.rate || 0).toFixed(2)}
+                    LKR ${parseFloat(r.roomPrice || r.rate || 0).toFixed(2)}
                 </td>
                 <td class="px-6 py-4 text-center">
                     <span class="px-3 py-1 text-xs font-semibold rounded-full ${r.available !== false && r.status !== 'UNAVAILABLE' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
@@ -207,8 +203,6 @@ const RoomsModule = {
         tbody.innerHTML = `<tr><td colspan="${RoomsModule.isReception ? 5 : 6}" class="px-6 py-12 text-center text-red-500 bg-red-50/50"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3 block opacity-70"></i> <strong>Error:</strong> ${msg}</td></tr>`;
     },
 
-    // Modal & Form Logic (Admin Only)
-    // id: numeric room id to edit, or null/undefined to add a new room
     showForm: (id = null) => {
         if (RoomsModule.isReception) return;
 
@@ -237,7 +231,7 @@ const RoomsModule = {
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Price per Night ($)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price per Night (LKR)</label>
                         <input type="number" step="0.01" min="0" id="roomPrice" value="${room ? (room.roomPrice || room.rate || '') : ''}" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none">
                     </div>
                     <div>
@@ -301,9 +295,6 @@ const RoomsModule = {
             roomType: document.getElementById('roomType').value
         };
 
-        // NOTE: do NOT include 'id' in the body for PUT requests.
-        // UpdateRoomDTO has no 'id' field — Jackson will throw UnrecognizedPropertyException.
-        // The room ID is already in the URL: PUT /api/rooms/{id}
         if (!id) {
             payload.available = document.getElementById('roomAvailable').checked;
         }
@@ -313,10 +304,8 @@ const RoomsModule = {
 
         try {
             if (id) {
-                // PUT /api/rooms/{id}
                 await fetchAPI(`/rooms/${id}`, 'PUT', payload);
             } else {
-                // POST /api/rooms/
                 await fetchAPI('/rooms/', 'POST', payload);
             }
             await RoomsModule.loadRooms();
@@ -330,7 +319,6 @@ const RoomsModule = {
         if(!confirm('Are you certain you want to delete Room #' + id + '? This action cannot be undone.')) return;
         showLoader(true);
         try {
-            // DELETE /api/rooms/{id}
             await fetchAPI(`/rooms/${id}`, 'DELETE');
             await RoomsModule.loadRooms();
         } catch (e) {
@@ -343,7 +331,6 @@ const RoomsModule = {
         if(!confirm(`Change room status to ${currentAvailable ? 'Unavailable' : 'Available'}?`)) return;
         showLoader(true);
         try {
-            // PATCH /api/rooms/{id}/status
             await fetchAPI(`/rooms/${id}/status`, 'PATCH', { available: !currentAvailable });
             await RoomsModule.loadRooms();
         } catch (e) {
@@ -353,7 +340,6 @@ const RoomsModule = {
     }
 };
 
-// Page initialization
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('viewContainer');
     if (container && window.location.pathname.includes('rooms.jsp')) {

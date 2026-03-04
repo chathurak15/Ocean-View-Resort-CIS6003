@@ -1,11 +1,5 @@
 const API_BASE_URL = (window.APP_CONTEXT || '') + '/api';
 
-/**
- * Perform an API call
- * @param {string} endpoint - API end point (e.g. '/users/login')
- * @param {string} method - HTTP Method (GET, POST, PUT, DELETE, PATCH)
- * @param {object} body - Optional body object for POST/PUT/PATCH
- */
 async function fetchAPI(endpoint, method = 'GET', body = null) {
     const headers = { 'Content-Type': 'application/json' };
     const options = { method, headers };
@@ -14,19 +8,24 @@ async function fetchAPI(endpoint, method = 'GET', body = null) {
         options.body = JSON.stringify(body);
     }
 
-    try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-        if (!response.ok) {
-            let errorMessage = 'Network response was not ok';
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.error || errorMessage;
-            } catch (e) {}
-            throw new Error(errorMessage);
-        }
-        if (response.status === 204) return null;
-        return await response.json();
-    } catch (error) {
-        throw error;
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+
+    if (!response.ok) {
+        let errorMessage = `Server error (${response.status})`;
+        try {
+            const errorData = await response.json();
+            if (errorData.error) {
+                errorMessage = errorData.error;
+            } else if (errorData.errors && typeof errorData.errors === 'object') {
+                const msgs = Object.values(errorData.errors);
+                errorMessage = msgs.length > 0 ? msgs.join(' | ') : 'Validation failed.';
+            } else if (errorData.message) {
+                errorMessage = errorData.message;
+            }
+        } catch (e) { /* body not JSON */ }
+        throw new Error(errorMessage);
     }
+
+    if (response.status === 204) return null;
+    return await response.json();
 }

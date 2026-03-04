@@ -1,7 +1,5 @@
-// users.js — User Management Module (Administrator only)
 const UsersModule = {
 
-    // ─── Init ────────────────────────────────────────────────────────────────
     init: async () => {
         const container = document.getElementById('viewContainer');
 
@@ -22,7 +20,6 @@ const UsersModule = {
         await UsersModule.loadUsers();
     },
 
-    // ─── Layout Shell ────────────────────────────────────────────────────────
     renderLayout: (container) => {
         container.innerHTML = `
             <div class="space-y-6 animate-fade-in">
@@ -104,11 +101,9 @@ const UsersModule = {
         `;
     },
 
-    // ─── Load & Render ───────────────────────────────────────────────────────
     loadUsers: async () => {
         if (typeof showLoader === 'function') showLoader(true);
         try {
-            // GET /api/users/
             const users = await fetchAPI('/users/');
             UsersModule.renderTable(users);
             UsersModule.updateStats(users);
@@ -136,7 +131,6 @@ const UsersModule = {
             return;
         }
 
-        // Get current logged-in user to protect self-delete/status
         const curUserStr = sessionStorage.getItem('currentUser');
         const curUser = curUserStr ? JSON.parse(curUserStr) : {};
         const curUserId = curUser.userId;
@@ -200,7 +194,6 @@ const UsersModule = {
         }
     },
 
-    // ─── Modal ───────────────────────────────────────────────────────────────
     showAddModal: () => {
         const modal = document.getElementById('userModal');
         const modalContent = document.getElementById('userModalContent');
@@ -263,9 +256,6 @@ const UsersModule = {
         setTimeout(() => modal.classList.add('hidden'), 300);
     },
 
-    // ─── Actions ─────────────────────────────────────────────────────────────
-
-    // POST /api/users/register
     addUser: async (e) => {
         e.preventDefault();
 
@@ -305,7 +295,6 @@ const UsersModule = {
         }
     },
 
-    // PUT /api/users/{id}/status   body: { active: boolean }
     toggleStatus: async (id, currentActive) => {
         const action = currentActive ? 'deactivate' : 'activate';
         if (!confirm(`Are you sure you want to ${action} User #${id}?`)) return;
@@ -320,7 +309,6 @@ const UsersModule = {
         }
     },
 
-    // DELETE /api/users/{id}
     deleteUser: async (id, username) => {
         if (!confirm(`Delete user "${username || '#' + id}"? This cannot be undone.`)) return;
 

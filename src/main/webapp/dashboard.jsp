@@ -4,79 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Ocean View Resort</title>
+    <title>Dashboard - Ocean View Resort</title>
+    <meta name="description" content="Ocean View Resort management dashboard — overview for administrators and receptionists.">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar       { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track  { background: transparent; }
+        ::-webkit-scrollbar-thumb  { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
     </style>
 </head>
-<body class="bg-gray-50 flex h-screen overflow-hidden">
+<body class="bg-gray-50 flex h-screen overflow-hidden" data-page="dashboard">
 
-    <!-- Include Sidebar -->
+    <!-- Sidebar -->
     <jsp:include page="sidebar.jsp" />
 
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col">
-        <!-- Include Top Header -->
-        <jsp:include page="top-header.jsp">
-             <jsp:param name="title" value="Dashboard Overview"/>
-        </jsp:include>
-
-        <!-- Dynamic Content Body -->
-        <div class="flex-1 p-8 overflow-y-auto bg-gray-50/50 relative" id="mainContent">
-            <!-- Loading Spinner -->
-            <div id="loader" class="hidden absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-
-            <!-- View Container -->
-            <div id="viewContainer" class="max-w-7xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center">
-                        <h3 class="text-gray-500 text-sm font-medium mb-1">Total Rooms</h3>
-                        <span class="text-3xl font-bold text-gray-900" id="dashTotalRooms">-</span>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center">
-                        <h3 class="text-gray-500 text-sm font-medium mb-1">Active Guests</h3>
-                        <span class="text-3xl font-bold text-gray-900" id="dashActiveGuests">-</span>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome to Ocean View Resort Administration!</h2>
-                    <p class="text-gray-500">Navigate using the sidebar to manage your hotel entities.</p>
-                    <i class="fa-solid fa-umbrella-beach text-blue-100 text-9xl mt-8"></i>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0">
+        <!-- Scrollable dashboard body -->
+        <div class="flex-1 overflow-y-auto bg-gray-50/50 relative" id="mainContent">
+            <!-- Global Loader -->
+            <div id="loader" class="hidden absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+                    <span class="text-sm text-gray-500 font-medium">Loading dashboard…</span>
                 </div>
             </div>
+
+            <div id="viewContainer" class="max-w-7xl mx-auto p-7"></div>
         </div>
     </main>
 
-    <!-- Modals Container (Injected globally) -->
+    <!-- Modal Container -->
     <div id="modalContainer"></div>
 
     <!-- Scripts -->
     <script>
         window.APP_CONTEXT = '<%= request.getContextPath() %>';
+        window.showLoader = function(show) {
+            const loader = document.getElementById('loader');
+            if (loader) loader.classList.toggle('hidden', !show);
+        };
     </script>
     <script src="assets/js/api.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Dashboard metrics
-            const loader = document.getElementById('loader');
-            loader.classList.remove('hidden');
-            try {
-                const rooms = await fetchAPI('/rooms/');
-                if (rooms) document.getElementById('dashTotalRooms').textContent = rooms.length;
-            } catch(e) { console.error(e); }
-            try {
-                const guests = await fetchAPI('/guests/');
-                if (guests) document.getElementById('dashActiveGuests').textContent = guests.length;
-            } catch(e) { console.error(e); }
-            loader.classList.add('hidden');
-        });
-    </script>
+    <script src="assets/js/dashboard.js"></script>
+
 </body>
 </html>

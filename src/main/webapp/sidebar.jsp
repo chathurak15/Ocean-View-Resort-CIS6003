@@ -60,7 +60,6 @@
     </div>
 </aside>
 <script>
-    // Set active link based on current URL path
     document.addEventListener("DOMContentLoaded", () => {
         const path = window.location.pathname;
         const links = {
@@ -81,14 +80,12 @@
         }
     });
 
-    // Handle logout gloablly since it's on the sidebar
     document.getElementById('logoutBtn').addEventListener('click', async () => {
         if(window.processLogout) { await window.processLogout(); return; }
         sessionStorage.removeItem('currentUser');
         window.location.replace('index.jsp');
     });
 
-    // Auth profile display
     const userStr = sessionStorage.getItem('currentUser');
     if (!userStr) {
         window.location.replace('index.jsp'); // Must log in
@@ -98,7 +95,6 @@
             document.getElementById('authUsername').textContent = user.username || user.name || 'User';
             document.getElementById('authRole').textContent = user.userType || 'RECEPTIONIST';
             
-            // Hide users panel for reception
             if ((user.userType || '').toLowerCase() !== 'administrator') {
                 const navUsers = document.getElementById('nav-users');
                 if (navUsers) navUsers.style.display = 'none';

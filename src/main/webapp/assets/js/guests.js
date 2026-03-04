@@ -1,16 +1,13 @@
-// guests.js — Guest Management Module
 const GuestsModule = {
 
-    _cache: new Map(), // guestId → guest object (for edit lookups)
+    _cache: new Map(),
 
-    // ─── Init ────────────────────────────────────────────────────────────────
     init: async () => {
         const container = document.getElementById('viewContainer');
         GuestsModule.renderLayout(container);
         await GuestsModule.loadGuests();
     },
 
-    // ─── Layout Shell ────────────────────────────────────────────────────────
     renderLayout: (container) => {
         container.innerHTML = `
             <div class="space-y-6 animate-fade-in">
@@ -95,12 +92,10 @@ const GuestsModule = {
         `;
     },
 
-    // ─── Data Loading ────────────────────────────────────────────────────────
     loadGuests: async () => {
         showLoader(true);
         try {
             document.getElementById('searchValue').value = '';
-            // GET /api/guests/
             const guests = await fetchAPI('/guests/');
             GuestsModule.renderTable(guests);
         } catch (e) {
@@ -118,7 +113,6 @@ const GuestsModule = {
 
         showLoader(true);
         try {
-            // GET /api/guests/search?id=X  OR  ?nic=X  OR  ?phone=X  (exactly one)
             const guests = await fetchAPI(`/guests/search?${type}=${encodeURIComponent(value)}`);
             GuestsModule.renderTable(guests);
         } catch (e) {
@@ -128,7 +122,6 @@ const GuestsModule = {
         }
     },
 
-    // ─── Render ───────────────────────────────────────────────────────────────
     renderTable: (guests) => {
         const tbody = document.getElementById('guestsTableBody');
         if (!guests || guests.length === 0) {
@@ -177,8 +170,6 @@ const GuestsModule = {
             <strong>Error:</strong> ${msg}</td></tr>`;
     },
 
-    // ─── Modal ────────────────────────────────────────────────────────────────
-    // id = null → Add mode | id = number → Edit mode (lookup from cache)
     showForm: (id = null) => {
         const guest  = id != null ? GuestsModule._cache.get(id) : null;
         const isEdit = !!guest;
@@ -262,10 +253,6 @@ const GuestsModule = {
         setTimeout(() => modal.classList.add('hidden'), 300);
     },
 
-    // ─── CRUD Actions ─────────────────────────────────────────────────────────
-
-    // POST /api/guests/  OR  PUT /api/guests/{id}
-    // Both use CreateGuestDTO: { name, email, phoneNumber, address, nic }
     saveGuest: async (e, id) => {
         e.preventDefault();
 
@@ -288,10 +275,8 @@ const GuestsModule = {
 
         try {
             if (id != null) {
-                // PUT /api/guests/{id}
                 await fetchAPI(`/guests/${id}`, 'PUT', payload);
             } else {
-                // POST /api/guests/
                 await fetchAPI('/guests/', 'POST', payload);
             }
             await GuestsModule.loadGuests();
@@ -301,7 +286,6 @@ const GuestsModule = {
         }
     },
 
-    // DELETE /api/guests/{id}
     deleteGuest: async (id, name) => {
         if (!confirm(`Delete guest "${name || '#' + id}"? This cannot be undone.`)) return;
         showLoader(true);

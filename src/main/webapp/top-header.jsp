@@ -6,7 +6,6 @@
     </div>
 </header>
 <script>
-    // Time update loop
     setInterval(() => {
         const timeEl = document.getElementById('currentTime');
         if(timeEl) {
