@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReservationDAOImpl implements ReservationDAO {
-    //create reservation
+    // create reservation
     @Override
     public Reservation createReservation(Reservation reservation) {
         String insertReservationSql =
@@ -230,6 +230,19 @@ public class ReservationDAOImpl implements ReservationDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error updating reservation status", e);
+        }
+    }
+
+    @Override
+    public void cancelViaStoredProcedure(String reservationNo) {
+        String sql = "{CALL cancel_reservation(?)}";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             CallableStatement cs = conn.prepareCall(sql)) {
+            cs.setString(1, reservationNo);
+            cs.execute();
+        } catch (SQLException e) {
+
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 

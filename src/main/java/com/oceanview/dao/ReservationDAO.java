@@ -15,6 +15,8 @@ public interface ReservationDAO {
 
     void updateStatus(String reservationNo, Status status);
 
+    void cancelViaStoredProcedure(String reservationNo);
+
     List<Reservation> getAllReservations();
 
     List<Reservation> findByDateRange(LocalDate fromDate, LocalDate toDate);
