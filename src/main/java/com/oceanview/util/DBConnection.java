@@ -17,7 +17,7 @@ public class DBConnection {
             // CONNECT
             Class.forName(driver);
             this.connection = DriverManager.getConnection(url, user, password);
-            System.out.println("OceanView Database Connected!");
+//            System.out.println("OceanView Database Connected!");
 
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();

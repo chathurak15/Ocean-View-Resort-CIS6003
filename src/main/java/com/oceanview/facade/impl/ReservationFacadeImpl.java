@@ -1,4 +1,5 @@
 package com.oceanview.facade.impl;
+
 import com.oceanview.dao.ReservationDAO;
 import com.oceanview.dto.Reservation.CreateReservationDTO;
 import com.oceanview.dto.Reservation.ReservationDTO;
@@ -109,18 +110,18 @@ public class ReservationFacadeImpl implements ReservationFacade {
         if (reservationNo == null || reservationNo.isBlank()) {
             throw new BusinessRuleException("Reservation number is required.");
         }
-
-        Reservation reservation = reservationDAO.getByReservationNo(reservationNo);
-
-        if (reservation == null) {
-            throw new ResourceNotFoundException("Reservation not found: " + reservationNo);
+        try {
+            reservationDAO.cancelViaStoredProcedure(reservationNo);
+        } catch (RuntimeException e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("not found")) {
+                throw new ResourceNotFoundException(msg);
+            }
+            if (msg != null && msg.contains("already cancelled")) {
+                throw new BusinessRuleException(msg);
+            }
+            throw e;
         }
-        if (reservation.getStatus() == Status.CANCELLED) {
-            throw new BusinessRuleException("Reservation is already cancelled.");
-        }
-        reservation.setStatus(Status.CANCELLED);
-
-        reservationDAO.updateStatus(reservationNo, Status.CANCELLED);
     }
 
     @Override

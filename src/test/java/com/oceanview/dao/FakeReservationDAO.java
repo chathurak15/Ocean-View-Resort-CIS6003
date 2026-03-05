@@ -61,6 +61,17 @@ public class FakeReservationDAO implements ReservationDAO {
         r.setStatus(status);
     }
 
+    // In-memory equivalent of the MySQL stored procedure
+    @Override
+    public void cancelViaStoredProcedure(String reservationNo) {
+        Reservation r = byNo.get(reservationNo);
+        if (r == null)
+            throw new RuntimeException("Reservation not found");
+        if (r.getStatus() == Status.CANCELLED)
+            throw new RuntimeException("Reservation is already cancelled");
+        r.setStatus(Status.CANCELLED);
+    }
+
     @Override
     public List<Reservation> getAllReservations() {
         // Keep stable ordering by reservationId
