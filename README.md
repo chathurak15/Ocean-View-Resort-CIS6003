@@ -1,216 +1,185 @@
 # Ocean View Resort – Distributed Online Reservation System
 
-## Module  
-CIS6003 – Advanced Programming  
-BSc (Hons) Software Engineering  
+![Ocean View Resort Hero Image](docs/img/hero-banner.png)
+**Module:** CIS6003 – Advanced Programming  
+**Course:** BSc (Hons) Software Engineering  
+**Author:** Chathura Kavindu Bandara
 
 ---
 
-## Project Overview
+## 📖 Project Overview
 
-Ocean View Resort is a distributed online room reservation system developed using Java Servlet API and JDBC.
+Ocean View Resort is an enterprise-grade, distributed online room reservation system designed to streamline hotel operations. It completely replaces legacy manual booking processes with a modern, secure, and highly scalable architecture. The system is built using the **Java Servlet API**, **JDBC**, and a robust relational database back-end.
 
-The system replaces manual booking management with a secure, scalable, and layered architecture aligned with enterprise Java EE fundamentals.
+This project was engineered to meticulously align with Java EE fundamentals and industry best practices, strictly adhering to:
 
-The project strictly follows:
-
-- 3 Tier Architecture
-- Object Oriented Design
-- SOLID Principles
-- Design Pattern Implementation
-- Service Level Unit Testing (TDD-aligned approach)
+- **3-Tier Architecture** for robust separation of concerns.
+- **Object-Oriented Design (OOD)** and **SOLID Principles** for maintainability.
+- **Design Pattern Implementation** (Strategy, Facade, Singleton, DAO) for scalable logic.
+- **Test-Driven Development (TDD)** aligned Service-Level Unit Testing.
 
 ---
 
-# System Architecture
+## 🏗️ System Architecture
 
-The system follows a strict 3-Tier Architecture:
+The project implements a strict, decoupled **3-Tier Architecture**:
+### 1. Presentation Layer (Web/API)
 
-## 1️ Presentation Layer
-- Java Servlets
-- REST style JSON endpoints
-- Centralized exception handling (BaseServlet)
-- HTTP status code standardization
-- Date-range query support
-- Session-ready architecture
+The topmost layer handles all incoming HTTP requests and responses. It serves as a JSON-based RESTful API interface for the frontend application.
 
----
+- **Technology:** Java Servlets, HTML, CSS, JavaScript (Vanilla).
+- **Features:**
+  - Centralized request routing and generic exception handling (`BaseServlet`).
+  - Standardized HTTP status codes (200, 201, 400, 404, 500).
+  - Secure session management and JWT/Token ready architecture.
 
-## 2️ Business Layer
-- Service implementations
-- Business rule validation
-- Constructor-based Dependency Injection
-- Strategy Pattern (Billing logic)
-- Validation Strategy Pattern
-- Exception-driven flow control
+### 2. Business Logic Layer (Services)
 
-This layer contains the core domain logic and is fully unit-tested.
+The core computation layer where all business rules, validations, and logic reside. This layer is entirely agnostic of the web and database layers, making it highly testable.
 
----
+- **Features:**
+  - Service implementations mapped to specific domains (e.g., `ReservationService`, `RoomService`).
+  - **Constructor-based Dependency Injection** for loose coupling and easy mocking.
+  - Implementations of the **Strategy Pattern** for dynamic behaviors (Billing, Validation).
+  - Clean exception-driven flow control (`BusinessRuleException`).
 
-## 3️ Data Access Layer
-- DAO Pattern
-- JDBC (MySQL)
-- Connection utility (Singleton pattern)
-- Custom exception abstraction (DataAccessException)
+### 3. Data Access Layer (DAO)
 
-Strict separation of concerns is maintained between layers.
+The persistence layer responsible for all interactions with the MySQL database.
 
----
-
-#  Implemented Modules
+- **Technology:** JDBC (MySQL).
+- **Features:**
+  - Strict adherence to the **Data Access Object (DAO) Pattern**.
+  - Custom abstraction for SQL exceptions (`DataAccessException`).
+  - Singleton pattern for managing efficient database connections.
 
 ---
 
-## User Management Module
+## 🚀 Core Modules & Features
 
-### Features
-- Secure authentication (SHA-256 password hashing)
-- Role-based deletion restriction (Administrator protection)
-- User activation/deactivation
-- Duplicate username prevention
-- Service-layer validation
-- Full unit test coverage
+The system is divided into highly cohesive, loosely coupled functional modules. Below is a detailed technical breakdown of each.
 
-### Design Concepts Applied
-- DAO Pattern
-- DTO Mapping Layer
-- Constructor Injection
-- Exception abstraction
-- Business rule enforcement in the Service layer
+### 👥 User Management Module
 
----
+This module governs authentication, authorization, and administrator controls.
 
-## Guest Management Module
-### Features
-- Create, retrieve, update, and delete guests
-- Search by ID, NIC, and phone number
-- Duplicate validation checks
-- Service-level isolation testing
----
+![User Management Interface](docs/img/user-management.png)
 
-## Room Management Module
-### Features
-- Create room
-- Retrieve all rooms
-- Retrieve room by ID
-- Update room details
-- Update room availability (idempotent logic)
-- Delete room
-- Duplicate room name prevention
-- Available rooms by date range
-- Maintenance/availability logic
+- **Secure Authentication:** User passwords are encrypted using SHA-256 hashing algorithms before persistence, ensuring defense against data leaks.
+- **Role-Based Access Control:** Strict validation prevents accidental deletion of system administrators, enforcing role-based security.
+- **Account State Management:** Users can be activated or deactivated without soft/hard deletion, preserving referential integrity.
+- **Validation:** Service-layer rules actively prevent the creation of duplicate usernames, utilizing exception-driven validation to relay meaningful errors back to the client.
 
-### Design Concepts Applied
-- DAO Pattern
-- Validation Strategy Pattern
-- Service-layer isolation
-- Constructor Injection for testability
-- BusinessRuleException enforcement
----
+### 🛎️ Guest Management Module
 
-##  Reservation Management Module
-### Features
-- Create reservation
-- Reservation conflict detection
-- Cancel reservation
-- Complete reservation
-- Retrieve by reservation number
-- Retrieve all reservations
-- Retrieve reservations by date range (reporting)
-- Reservation status lifecycle management
+Manages the lifecycle of customer (guest) data, crucial for reservations and billing.
 
-### Conflict Handling
-- Overlapping booking prevention
-- Boundary condition handling (check-in equals check-out allowed)
-- Confirmed reservations block availability
-- Cancelled reservations do not block availability
+![Guest Profile View](docs/img/guest-management.png)
+
+- **Comprehensive CRUD:** Full ability to Create, Read, Update, and Delete guest profiles.
+- **Advanced Search:** Allows staff to quickly locate guests using unique identifiers such as ID, National Identity Card (NIC), or contact number.
+- **Data Integrity:** Real-time duplication checks at the service layer guarantee that guest records remain unique and consistent.
+
+### 🛏️ Room Management Module
+
+Handles the physical inventory of the resort, bridging room availability with operational status.
+
+![Room Inventory Management](docs/img/room-management.png)
+
+- **Inventory Control:** Complete CRUD functionality for hotel rooms.
+- **Idempotent Availability Updates:** Ensures repetitive updates to room availability do not cause side-effects or corrupt state.
+- **Smart Date-Range Queries:** Empowers receptionists to query for available rooms based strictly on specified check-in/check-out dates.
+- **Maintenance Lifecycle:** Rooms can be securely transitioned into a maintenance state, reliably removing them from the available booking pool.
+
+### 📅 Reservation Management Module
+
+The most complex module, handling booking lifecycles and conflict prevention.
+
+![Reservation Form & Conflict Detection](docs/img/reservation-management.png)
+
+- **Lifecycle Management:** A reservation traverses specific states: Created -> Confirmed -> Completed or Cancelled.
+- **Intelligent Conflict Detection:** Implements algorithm-based overlapping booking prevention. The system detects if check-in/out dates cross over with any pre-existing confirmed reservations for a specific room.
+- **Boundary Condition Handling:** Safely handles edge cases cleanly (e.g., check-in and check-out on the same day).
+- **Availability Enforcement:** Confirmed and ongoing reservations actively block room availability, whereas cancelled ones immediately unlock the room back into the inventory pool.
+
+### 💰 Billing Module (Strategy Pattern)
+
+A highly scalable price calculation engine.
+
+![Billing and Checkout Screen](docs/img/billing-module.png)
+
+To adhere to Open Closed principles, billing logic utilizes the **Strategy Design Pattern**, allowing runtime injection of different pricing models without modifying core code.
+
+- **`FlatRateBillingStrategy`:** Standard night-by-night cost calculations without modifiers.
+- **`RoomTypeSurchargeBillingStrategy`:** Dynamic price calculation taking into account luxury/suite room type multipliers and seasonal modifiers.
+- **Features:** Night-based calculus, total line-item aggregations, and strict business rule validation rejecting mathematically impossible rates (e.g., negative nights).
 
 ---
 
-## Billing Module (Strategy Pattern)
+## ⚙️ Software Design Patterns Applied
 
-### Implemented Strategies
+A defining characteristic of this project is the integration of standard Gang of Four (GoF) design patterns to solve common architectural problems:
 
-- `FlatRateBillingStrategy`  
-- `RoomTypeSurchargeBillingStrategy`  
-
-### Features
-- Dynamic price calculation
-- Night-based billing
-- Room type multiplier logic
-- Reservation line item total calculation
-- Business rule validation for invalid rates
-
-### Design Pattern Applied
-- Strategy Pattern (Runtime billing selection)
----
-
-# Testing Strategy
-Testing focuses on the **Service Layer**, where business logic resides.
-## Approach
-- JUnit 4.13.2
-- FakeDAO implementations for isolation
-- Stub services for facade testing
-- Constructor based dependency injection
-- Edge-case validation
-- Exception expectation testing
-- Date boundary testing
-
-This approach ensures deterministic, fast, and isolated tests aligned with TDD principles.
+1. **Strategy Pattern (Billing / Validation):** Allowed the decoupling of billing algorithms and complex validation sequences from the monolithic service logic.
+2. **Data Access Object (DAO) Pattern:** Abstracted all SQL and database interactions, providing simple in-memory-like lists/objects to the service layer.
+3. **Facade Pattern:** Provided a unified interface to the complex subsystems (especially evident in the interactions between reservations, rooms, and billing computations).
+4. **Singleton Pattern:** Employed exclusively for managing the Database Connection lifecycle, preventing thread-exhaustion and memory leaks.
+5. **Constructor-Based Dependency Injection (DI):** Enabled high modularity and facilitated rigorous automated testing by easily swapping out real DAOs for mocked/fake DAOs.
 
 ---
 
-# Git Workflow
-## Branching Strategy
+## 🧪 Testing Strategy & Quality Assurance
 
-- **Dev** → Active development  
-- **Test** → Verified and stable builds  
-- **Master** → Production-ready release  
+Quality assurance is heavily focused on the **Service Layer** via a Test-Driven Development (TDD) mindset, ensuring that the critical business rules function flawlessly regardless of the UI or Database stability.
 
-All merges are performed using Pull Requests.
+![Unit Testing Results](docs/img/test-results.png)
 
-## Version Tags
-- `v0.2.0-user-module`
-- `v0.2.1-user-tests`
-- `v0.3.0-room-module`
-- `v1.0.0-stable-release` (planned)
+- **Framework:** JUnit 4.13.2
+- **Testing Methodology:**
+  - **FakeDAO Implementations:** In-memory lists simulate database interactions, allowing lightning-fast, highly isolated service tests.
+  - **Exception Expectation:** Purposely feeding invalid data (duplicate names, conflicting dates) to ensure `BusinessRuleException` is thrown correctly.
+  - **Date Boundary Testing:** Stress-testing the most complex logic: reservation conflict algorithms.
 
 ---
 
-# Design Patterns Used
-- Strategy Pattern (Billing)
-- Validation Strategy Pattern
-- Facade Pattern
-- Singleton Pattern (DB Connection)
-- Constructor Based Dependency Injection
+## 🌿 Git Version Control & Workflow
+
+The repository was strictly managed using branching and tagging best practices.
+
+- **Dev:** The active development and feature integration branch.
+- **Test:** The staging area for executing unit tests and verifying stable builds.
+- **Master:** Protected branch reserved strictly for production-ready releases.
+
+**Version Tags Included:** `v0.2.0-user-module`, `v0.3.0-room-module`, up to the final `v1.1.0`.
 
 ---
 
-# Technologies Used
-- Java 21+
-- Servlet API
-- JDBC
-- MySQL
-- Maven
-- JUnit 4.13.2
-- Postman (API testing)
+## 🛠️ Technology Stack
+
+- **Backend:** Java 21+, Java Servlet API, JDBC
+- **Database:** MySQL 8+
+- **Frontend:** HTML5, CSS3, Vanilla JavaScript (Fetch API for REST)
+- **Build & Management:** Apache Maven, Apache Tomcat 9
+- **Testing:** JUnit 4.13.2, Postman
 
 ---
 
-# System Strengths
-- Clean layered architecture
-- SOLID compliant service layer
-- Exception-driven validation
-- Conflict detection algorithm
-- Deterministic unit testing
-- Scalable module design
-- Enterprise-ready structure
+## 🚀 Getting Started / Setup Guide
+
+### 1. Database Configuration
+
+1. Install MySQL and create a database named `ocean_view_resort`.
+2. Locate the SQL schema file within the project repository (`src/main/resources/schema.sql` or similar) and execute it to generate the tables.
+3. Update the `db.properties` or database configuration class with your local MySQL credentials.
+
+### 2. Running the Application via Maven & Tomcat
+
+1. Ensure Java 21, Maven, and Tomcat 9 are installed and path variables are configured.
+2. Clone this repository locally.
+3. Execute `mvn clean install` to build the `.war` package.
+4. Deploy the `.war` file to your Tomcat Server's `webapps` directory, or configure Smart Tomcat within IntelliJ IDEA/Eclipse to run it directly.
+5. Access the application on standard localhost ports (typically `http://localhost:8080/oceanview`).
 
 ---
 
-# Author
-
-**Chathura Kavindu Bandara**  
-BSc (Hons) Software Engineering  
-CIS6003 – Advanced Programming  
+_This project was developed to demonstrate enterprise architectural patterns, secure back-end processing, and scalable Java programming concepts._
