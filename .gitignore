@@ -32,3 +32,4 @@ target/
 Thumbs.db
 
 db.properties
+.smarttomcat
