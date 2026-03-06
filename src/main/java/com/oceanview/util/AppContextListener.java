@@ -34,6 +34,9 @@ public class AppContextListener implements ServletContextListener {
             // test DB Connection immediately on startup
             DBConnection.getInstance();
 
+            // create stored procedure + trigger if not already present
+            DBSchemaInitializer.runAll();
+
         } catch (IOException ex) {
             ex.printStackTrace();
         }
