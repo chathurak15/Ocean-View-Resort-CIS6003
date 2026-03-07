@@ -279,8 +279,7 @@ const UsersModule = {
             name,
             userName,
             password,
-            userType: 'RECEPTIONIST',
-            isActive: true
+            userType: 'RECEPTIONIST'
         };
 
         try {
