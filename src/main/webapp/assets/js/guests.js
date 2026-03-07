@@ -109,7 +109,10 @@ const GuestsModule = {
         const type  = document.getElementById('searchType').value;
         const value = document.getElementById('searchValue').value.trim();
 
-        if (!value) { alert('Please enter a search value.'); return; }
+        if (!value) { 
+            if (typeof showToast === 'function') showToast('Please enter a search value.', 'error');
+            return; 
+        }
 
         showLoader(true);
         try {
@@ -276,13 +279,15 @@ const GuestsModule = {
         try {
             if (id != null) {
                 await fetchAPI(`/guests/${id}`, 'PUT', payload);
+                if (typeof showToast === 'function') showToast('Guest updated successfully', 'success');
             } else {
                 await fetchAPI('/guests/', 'POST', payload);
+                if (typeof showToast === 'function') showToast('Guest created successfully', 'success');
             }
             await GuestsModule.loadGuests();
         } catch (error) {
             showLoader(false);
-            alert('Failed to save guest: ' + (error.message || 'Unknown error'));
+            if (typeof showToast === 'function') showToast('Failed to save guest: ' + (error.message || 'Unknown error'), 'error');
         }
     },
 
@@ -291,9 +296,10 @@ const GuestsModule = {
         showLoader(true);
         try {
             await fetchAPI(`/guests/${id}`, 'DELETE');
+            if (typeof showToast === 'function') showToast(`Guest "${name || '#' + id}" deleted successfully`, 'success');
             await GuestsModule.loadGuests();
         } catch (e) {
-            alert('Delete failed: ' + e.message);
+            if (typeof showToast === 'function') showToast('Delete failed: ' + e.message, 'error');
             showLoader(false);
         }
     }

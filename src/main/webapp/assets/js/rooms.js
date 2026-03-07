@@ -136,7 +136,7 @@ const RoomsModule = {
         const checkOut = document.getElementById('filterCheckOut').value;
 
         if (!checkIn || !checkOut) {
-            alert('Please select both Check In and Check Out dates');
+            if (typeof showToast === 'function') showToast('Please select both Check In and Check Out dates', 'error');
             return;
         }
 
@@ -305,12 +305,14 @@ const RoomsModule = {
         try {
             if (id) {
                 await fetchAPI(`/rooms/${id}`, 'PUT', payload);
+                if (typeof showToast === 'function') showToast('Room updated successfully', 'success');
             } else {
                 await fetchAPI('/rooms/', 'POST', payload);
+                if (typeof showToast === 'function') showToast('Room created successfully', 'success');
             }
             await RoomsModule.loadRooms();
         } catch (error) {
-            alert('Failed to save room: ' + (error.message || JSON.stringify(error)));
+            if (typeof showToast === 'function') showToast('Failed to save room: ' + (error.message || JSON.stringify(error)), 'error');
             showLoader(false);
         }
     },
@@ -320,9 +322,10 @@ const RoomsModule = {
         showLoader(true);
         try {
             await fetchAPI(`/rooms/${id}`, 'DELETE');
+            if (typeof showToast === 'function') showToast(`Room #${id} deleted successfully`, 'success');
             await RoomsModule.loadRooms();
         } catch (e) {
-            alert('Delete failed: ' + e.message);
+            if (typeof showToast === 'function') showToast('Delete failed: ' + e.message, 'error');
             showLoader(false);
         }
     },
@@ -332,9 +335,10 @@ const RoomsModule = {
         showLoader(true);
         try {
             await fetchAPI(`/rooms/${id}/status`, 'PATCH', { available: !currentAvailable });
+            if (typeof showToast === 'function') showToast(`Room #${id} status updated successfully`, 'success');
             await RoomsModule.loadRooms();
         } catch (e) {
-            alert('Status update failed: ' + e.message);
+            if (typeof showToast === 'function') showToast('Status update failed: ' + e.message, 'error');
             showLoader(false);
         }
     }
