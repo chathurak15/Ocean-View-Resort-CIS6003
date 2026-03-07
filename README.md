@@ -1,11 +1,15 @@
 # Ocean View Resort – Distributed Online Reservation System
 
-![Ocean View Resort Hero Image](docs/img/hero-banner.png)
 **Module:** CIS6003 – Advanced Programming  
 **Course:** BSc (Hons) Software Engineering  
 **Author:** Chathura Kavindu Bandara
 
 ---
+## 🎥 Ocean View Resort System Demo
+
+This video demonstrates the main features of the Ocean View Resort distributed reservation system including guest management, room management, and reservation processing.
+
+[![Watch the Video](https://img.youtube.com/vi/xjh5lm8H2_U/0.jpg)](https://youtu.be/xjh5lm8H2_U)
 
 ## 📖 Project Overview
 
@@ -14,7 +18,7 @@ Ocean View Resort is an enterprise-grade, distributed online room reservation sy
 This project was engineered to meticulously align with Java EE fundamentals and industry best practices, strictly adhering to:
 
 - **3-Tier Architecture** for robust separation of concerns.
-- **Object-Oriented Design (OOD)** and **SOLID Principles** for maintainability.
+- **OOP,OOD** and **SOLID Principles** for maintainability.
 - **Design Pattern Implementation** (Strategy, Facade, Singleton, DAO) for scalable logic.
 - **Test-Driven Development (TDD)** aligned Service-Level Unit Testing.
 
@@ -31,7 +35,7 @@ The topmost layer handles all incoming HTTP requests and responses. It serves as
 - **Features:**
   - Centralized request routing and generic exception handling (`BaseServlet`).
   - Standardized HTTP status codes (200, 201, 400, 404, 500).
-  - Secure session management and JWT/Token ready architecture.
+  - Secure session management.
 
 ### 2. Business Logic Layer (Services)
 
@@ -136,7 +140,7 @@ Quality assurance is heavily focused on the **Service Layer** via a Test-Driven 
 
 - **Framework:** JUnit 4.13.2
 - **Testing Methodology:**
-  - **FakeDAO Implementations:** In-memory lists simulate database interactions, allowing lightning-fast, highly isolated service tests.
+  - **FakeDAO Implementations:** In memory lists simulate database interactions, allowing lightning-fast, highly isolated service tests.
   - **Exception Expectation:** Purposely feeding invalid data (duplicate names, conflicting dates) to ensure `BusinessRuleException` is thrown correctly.
   - **Date Boundary Testing:** Stress-testing the most complex logic: reservation conflict algorithms.
 
@@ -148,9 +152,9 @@ The repository was strictly managed using branching and tagging best practices.
 
 - **Dev:** The active development and feature integration branch.
 - **Test:** The staging area for executing unit tests and verifying stable builds.
-- **Master:** Protected branch reserved strictly for production-ready releases.
+- **Master:** Protected branch reserved strictly for production ready releases.
 
-**Version Tags Included:** `v0.2.0-user-module`, `v0.3.0-room-module`, up to the final `v1.1.0`.
+**Version Tags Included:** `v0.2.0-user-module`, `v0.3.0-room-module`, up to the final `v1.1.1`.
 
 ---
 
