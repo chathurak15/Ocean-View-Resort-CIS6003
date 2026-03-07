@@ -111,7 +111,6 @@ const GuestsModule = {
 
         if (!value) { 
             if (typeof showToast === 'function') showToast('Please enter a search value.', 'error');
-            else alert('Please enter a search value.'); 
             return; 
         }
 
@@ -289,7 +288,6 @@ const GuestsModule = {
         } catch (error) {
             showLoader(false);
             if (typeof showToast === 'function') showToast('Failed to save guest: ' + (error.message || 'Unknown error'), 'error');
-            else alert('Failed to save guest: ' + (error.message || 'Unknown error'));
         }
     },
 
@@ -302,7 +300,6 @@ const GuestsModule = {
             await GuestsModule.loadGuests();
         } catch (e) {
             if (typeof showToast === 'function') showToast('Delete failed: ' + e.message, 'error');
-            else alert('Delete failed: ' + e.message);
             showLoader(false);
         }
     }

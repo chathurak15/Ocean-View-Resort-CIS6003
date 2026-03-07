@@ -306,7 +306,6 @@ const UsersModule = {
             await UsersModule.loadUsers();
         } catch (e) {
             if (typeof showToast === 'function') showToast('Status update failed: ' + e.message, 'error');
-            else alert('Status update failed: ' + e.message);
             if (typeof showLoader === 'function') showLoader(false);
         }
     },
@@ -321,7 +320,6 @@ const UsersModule = {
             await UsersModule.loadUsers();
         } catch (e) {
             if (typeof showToast === 'function') showToast('Delete failed: ' + e.message, 'error');
-            else alert('Delete failed: ' + e.message);
             if (typeof showLoader === 'function') showLoader(false);
         }
     }

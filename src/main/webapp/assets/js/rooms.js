@@ -137,7 +137,6 @@ const RoomsModule = {
 
         if (!checkIn || !checkOut) {
             if (typeof showToast === 'function') showToast('Please select both Check In and Check Out dates', 'error');
-            else alert('Please select both Check In and Check Out dates');
             return;
         }
 
@@ -314,7 +313,6 @@ const RoomsModule = {
             await RoomsModule.loadRooms();
         } catch (error) {
             if (typeof showToast === 'function') showToast('Failed to save room: ' + (error.message || JSON.stringify(error)), 'error');
-            else alert('Failed to save room: ' + (error.message || JSON.stringify(error)));
             showLoader(false);
         }
     },
@@ -328,7 +326,6 @@ const RoomsModule = {
             await RoomsModule.loadRooms();
         } catch (e) {
             if (typeof showToast === 'function') showToast('Delete failed: ' + e.message, 'error');
-            else alert('Delete failed: ' + e.message);
             showLoader(false);
         }
     },
@@ -342,7 +339,6 @@ const RoomsModule = {
             await RoomsModule.loadRooms();
         } catch (e) {
             if (typeof showToast === 'function') showToast('Status update failed: ' + e.message, 'error');
-            else alert('Status update failed: ' + e.message);
             showLoader(false);
         }
     }

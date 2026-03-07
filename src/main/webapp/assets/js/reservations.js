@@ -238,7 +238,6 @@ const ReservationsModule = {
             await ReservationsModule.loadReservations();
         } catch (e) {
             if (typeof showToast === 'function') showToast(`${label} failed: ` + e.message, 'error');
-            else alert(`${label} failed: ` + e.message);
             showLoader(false);
         }
     },
@@ -250,12 +249,10 @@ const ReservationsModule = {
         const to   = document.getElementById('reportTo').value;
         if (!from || !to) { 
             if (typeof showToast === 'function') showToast('Please select both From and To dates.', 'error');
-            else alert('Please select both From and To dates.'); 
             return; 
         }
         if (from > to)    { 
             if (typeof showToast === 'function') showToast('From date must be before To date.', 'error');
-            else alert('From date must be before To date.'); 
             return; 
         }
 
@@ -298,7 +295,6 @@ const ReservationsModule = {
             document.getElementById('reportTableWrap').classList.remove('hidden');
         } catch (e) {
             if (typeof showToast === 'function') showToast('Report failed: ' + e.message, 'error');
-            else alert('Report failed: ' + e.message);
         } finally {
             showLoader(false);
         }
@@ -438,13 +434,28 @@ const ReservationsModule = {
                 CANCELLED: 'bg-rose-100 text-rose-700 border border-rose-200',
             };
 
-            const roomRows = (r.rooms || []).map(rm => `
+            const roomRows = (r.rooms || []).map(rm => {
+                const baseLine = (parseFloat(rm.ratePerNight) || 0) * nights;
+                const actualLine = parseFloat(rm.lineTotal) || 0;
+                let markupText = '';
+                
+                if (actualLine > baseLine && baseLine > 0) {
+                    const diff = actualLine - baseLine;
+                    const percent = Math.round((diff / baseLine) * 100);
+                    markupText = `<div class="text-[10px] text-amber-600 mt-0.5 whitespace-nowrap">+${percent}% Room Type Markup</div>`;
+                }
+
+                return `
                 <tr class="border-b border-gray-100">
                     <td class="py-2 text-gray-800 font-medium">${rm.roomName}</td>
                     <td class="py-2 text-center text-gray-500">${nights} night${nights!==1?'s':''}</td>
                     <td class="py-2 text-right text-gray-600">LKR ${parseFloat(rm.ratePerNight||0).toFixed(2)}</td>
-                    <td class="py-2 text-right font-semibold text-gray-800">LKR ${parseFloat(rm.lineTotal||0).toFixed(2)}</td>
-                </tr>`).join('');
+                    <td class="py-2 text-right font-semibold text-gray-800">
+                        LKR ${actualLine.toFixed(2)}
+                        ${markupText}
+                    </td>
+                </tr>`;
+            }).join('');
 
             modalContent.innerHTML = `
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 sticky top-0">
@@ -517,13 +528,27 @@ const ReservationsModule = {
         const nights = r.checkInDate && r.checkOutDate
             ? Math.round((new Date(r.checkOutDate) - new Date(r.checkInDate)) / 86400000) : 0;
 
-        const roomRows = (r.rooms || []).map(rm => `
+        const roomRows = (r.rooms || []).map(rm => {
+            const baseLine = (parseFloat(rm.ratePerNight) || 0) * nights;
+            const actualLine = parseFloat(rm.lineTotal) || 0;
+            let markupText = '';
+            
+            if (actualLine > baseLine && baseLine > 0) {
+                const percent = Math.round(((actualLine - baseLine) / baseLine) * 100);
+                markupText = `<br><span style="font-size:9px;color:#d97706">+${percent}% Room Type Markup</span>`;
+            }
+
+            return `
             <tr>
                 <td>${rm.roomName}</td>
                 <td style="text-align:center">${nights}</td>
                 <td style="text-align:right">LKR ${parseFloat(rm.ratePerNight||0).toFixed(2)}</td>
-                <td style="text-align:right">LKR ${parseFloat(rm.lineTotal||0).toFixed(2)}</td>
-            </tr>`).join('');
+                <td style="text-align:right">
+                    LKR ${actualLine.toFixed(2)}
+                    ${markupText}
+                </td>
+            </tr>`;
+        }).join('');
 
         const statusColor = { CONFIRMED:'#1d4ed8', COMPLETED:'#059669', CANCELLED:'#dc2626' };
         const sColor = statusColor[r.status] || '#1d4ed8';
@@ -910,11 +935,25 @@ const ReservationsModule = {
 
         let total = 0;
         const lines = rooms.map(r => {
-            const line = r.roomPrice * nights;
+            let rate = r.roomPrice;
+            let markupPercent = 0;
+            
+            // Apply backend logic locally for accurate pre-calculation summary
+            if (r.roomType === 'DELUXE') markupPercent = 10;
+            else if (r.roomType === 'FAMILY_SUITE') markupPercent = 20;
+            
+            const multiplier = 1 + (markupPercent / 100);
+            const line = rate * multiplier * nights;
             total += line;
-            return `<div class="flex justify-between text-gray-600">
-                <span>${r.roomName} × ${nights} night${nights !== 1 ? 's' : ''}</span>
-                <span>LKR ${line.toFixed(2)}</span>
+            
+            let markupLabel = markupPercent > 0 ? `<span class="text-[10px] text-amber-600 block ml-auto">+${markupPercent}% type markup</span>` : '';
+
+            return `<div class="flex flex-col text-gray-600 mb-2">
+                <div class="flex justify-between">
+                    <span>${r.roomName} × ${nights} night${nights !== 1 ? 's' : ''}</span>
+                    <span>LKR ${line.toFixed(2)}</span>
+                </div>
+                ${markupLabel}
             </div>`;
         });
 
@@ -927,7 +966,10 @@ const ReservationsModule = {
     searchGuest: async () => {
         const type = document.getElementById('guestSearchType').value;
         const val  = document.getElementById('guestSearchVal').value.trim();
-        if (!val) { alert('Enter a search value.'); return; }
+        if (!val) { 
+            if (typeof showToast === 'function') showToast('Enter a search value.', 'error');
+            return; 
+        }
 
         const area = document.getElementById('guestArea');
         area.innerHTML = `<div class="flex items-center gap-2 text-gray-400 text-xs"><div class="animate-spin h-3 w-3 border-2 border-gray-300 border-t-blue-500 rounded-full"></div> Searching...</div>`;
@@ -1009,6 +1051,8 @@ const ReservationsModule = {
             // Hide the form, show confirmed guest card
             document.getElementById('newGuestForm').classList.add('hidden');
             document.getElementById('toggleNewGuestBtn').textContent = '+ Register new guest instead';
+            
+            if (typeof showToast === 'function') showToast('Guest registered successfully', 'success');
 
             document.getElementById('guestArea').innerHTML = `
                 <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
