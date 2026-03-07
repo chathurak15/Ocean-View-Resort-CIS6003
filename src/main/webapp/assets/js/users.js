@@ -285,6 +285,7 @@ const UsersModule = {
         try {
             await fetchAPI('/users/register', 'POST', payload);
             UsersModule.closeModal();
+            if (typeof showToast === 'function') showToast('User created successfully', 'success');
             await UsersModule.loadUsers();
         } catch (error) {
             errEl.textContent = error.message || 'Failed to create user.';
@@ -301,9 +302,11 @@ const UsersModule = {
         if (typeof showLoader === 'function') showLoader(true);
         try {
             await fetchAPI(`/users/${id}/status`, 'PUT', { active: !currentActive });
+            if (typeof showToast === 'function') showToast(`User #${id} status updated successfully`, 'success');
             await UsersModule.loadUsers();
         } catch (e) {
-            alert('Status update failed: ' + e.message);
+            if (typeof showToast === 'function') showToast('Status update failed: ' + e.message, 'error');
+            else alert('Status update failed: ' + e.message);
             if (typeof showLoader === 'function') showLoader(false);
         }
     },
@@ -314,9 +317,11 @@ const UsersModule = {
         if (typeof showLoader === 'function') showLoader(true);
         try {
             await fetchAPI(`/users/${id}`, 'DELETE');
+            if (typeof showToast === 'function') showToast(`User "${username || '#' + id}" deleted successfully`, 'success');
             await UsersModule.loadUsers();
         } catch (e) {
-            alert('Delete failed: ' + e.message);
+            if (typeof showToast === 'function') showToast('Delete failed: ' + e.message, 'error');
+            else alert('Delete failed: ' + e.message);
             if (typeof showLoader === 'function') showLoader(false);
         }
     }

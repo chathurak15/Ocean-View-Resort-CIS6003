@@ -234,9 +234,11 @@ const ReservationsModule = {
         showLoader(true);
         try {
             await fetchAPI(`/reservations/${reservationNo}/${action}`, 'PUT');
+            if (typeof showToast === 'function') showToast(`Reservation ${reservationNo} ${label.toLowerCase()}ed successfully`, 'success');
             await ReservationsModule.loadReservations();
         } catch (e) {
-            alert(`${label} failed: ` + e.message);
+            if (typeof showToast === 'function') showToast(`${label} failed: ` + e.message, 'error');
+            else alert(`${label} failed: ` + e.message);
             showLoader(false);
         }
     },
@@ -246,8 +248,16 @@ const ReservationsModule = {
     generateReport: async () => {
         const from = document.getElementById('reportFrom').value;
         const to   = document.getElementById('reportTo').value;
-        if (!from || !to) { alert('Please select both From and To dates.'); return; }
-        if (from > to)    { alert('From date must be before To date.'); return; }
+        if (!from || !to) { 
+            if (typeof showToast === 'function') showToast('Please select both From and To dates.', 'error');
+            else alert('Please select both From and To dates.'); 
+            return; 
+        }
+        if (from > to)    { 
+            if (typeof showToast === 'function') showToast('From date must be before To date.', 'error');
+            else alert('From date must be before To date.'); 
+            return; 
+        }
 
         showLoader(true);
         try {
@@ -287,7 +297,8 @@ const ReservationsModule = {
             ReservationsModule.renderTable(list, 'reportTableBody', false);
             document.getElementById('reportTableWrap').classList.remove('hidden');
         } catch (e) {
-            alert('Report failed: ' + e.message);
+            if (typeof showToast === 'function') showToast('Report failed: ' + e.message, 'error');
+            else alert('Report failed: ' + e.message);
         } finally {
             showLoader(false);
         }
@@ -295,7 +306,11 @@ const ReservationsModule = {
 
     exportCSV: () => {
         const list = ReservationsModule._reportData;
-        if (!list || !list.length) { alert('Generate a report first.'); return; }
+        if (!list || !list.length) { 
+            if (typeof showToast === 'function') showToast('Generate a report first.', 'error');
+            else alert('Generate a report first.'); 
+            return; 
+        }
 
         const headers = ['Ref No', 'Guest', 'Check In', 'Check Out', 'Rooms', 'Status', 'Total (USD)'];
         const fmt = d => d ? new Date(d).toLocaleDateString('en-GB') : '';
@@ -323,7 +338,11 @@ const ReservationsModule = {
 
     exportReportPDF: () => {
         const list = ReservationsModule._reportData;
-        if (!list || !list.length) { alert('Generate a report first.'); return; }
+        if (!list || !list.length) { 
+            if (typeof showToast === 'function') showToast('Generate a report first.', 'error');
+            else alert('Generate a report first.'); 
+            return; 
+        }
 
         const from = ReservationsModule._reportFrom;
         const to   = ReservationsModule._reportTo;
@@ -1051,7 +1070,7 @@ const ReservationsModule = {
             const result = await fetchAPI('/reservations/', 'POST', payload);
             ReservationsModule.closeModal();
             await ReservationsModule.loadReservations();
-            ReservationsModule.showToast(`Reservation ${result.reservationNo} confirmed! Total: LKR ${parseFloat(result.totalAmount || 0).toFixed(2)}`, 'success');
+            if (typeof showToast === 'function') showToast(`Reservation ${result.reservationNo} confirmed! Total: LKR ${parseFloat(result.totalAmount || 0).toFixed(2)}`, 'success');
         } catch (e) {
             errEl.textContent = 'Reservation failed: ' + e.message;
             errEl.classList.remove('hidden');
@@ -1060,18 +1079,5 @@ const ReservationsModule = {
         }
     },
 
-    showToast: (msg, type = 'success') => {
-        const toast = document.createElement('div');
-        const colors = type === 'success'
-            ? 'bg-emerald-600 text-white'
-            : 'bg-red-600 text-white';
-        toast.className = `fixed bottom-6 right-6 z-[999] px-5 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 ${colors} transition-all opacity-0`;
-        toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> ${msg}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.classList.remove('opacity-0'), 50);
-        setTimeout(() => {
-            toast.classList.add('opacity-0');
-            setTimeout(() => toast.remove(), 400);
-        }, 4000);
-    }
+    // Global showToast from api.js is used
 };
