@@ -122,19 +122,19 @@ To adhere to Open Closed principles, billing logic utilizes the **Strategy Desig
 
 ## ⚙️ Software Design Patterns Applied
 
-A defining characteristic of this project is the integration of standard Gang of Four (GoF) design patterns to solve common architectural problems:
+A defining characteristic of this project is the integration of design patterns to solve common architectural problems:
 
 1. **Strategy Pattern (Billing / Validation):** Allowed the decoupling of billing algorithms and complex validation sequences from the monolithic service logic.
-2. **Data Access Object (DAO) Pattern:** Abstracted all SQL and database interactions, providing simple in-memory-like lists/objects to the service layer.
+2. **Factory Pattern:** The BillingStrategyFactory is responsible for selecting the correct billing strategy.
 3. **Facade Pattern:** Provided a unified interface to the complex subsystems (especially evident in the interactions between reservations, rooms, and billing computations).
 4. **Singleton Pattern:** Employed exclusively for managing the Database Connection lifecycle, preventing thread-exhaustion and memory leaks.
-5. **Constructor-Based Dependency Injection (DI):** Enabled high modularity and facilitated rigorous automated testing by easily swapping out real DAOs for mocked/fake DAOs.
+5. **Template Method Pattern:**  The Template Method pattern is implemented using the BaseServlet class. 
 
 ---
 
 ## 🧪 Testing Strategy & Quality Assurance
 
-Quality assurance is heavily focused on the **Service Layer** via a Test-Driven Development (TDD) mindset, ensuring that the critical business rules function flawlessly regardless of the UI or Database stability.
+Quality assurance is heavily focused on the **Service Layer** via a Test Driven Development (TDD) mindset, ensuring that the critical business rules function flawlessly regardless of the UI or Database stability.
 
 ![Unit Testing Results](docs/img/test-results.png)
 
@@ -178,7 +178,7 @@ The repository was strictly managed using branching and tagging best practices.
 
 ### 2. Running the Application via Maven & Tomcat
 
-1. Ensure Java 21, Maven, and Tomcat 9 are installed and path variables are configured.
+1. Ensure Java 21, Maven, and Tomcat 9 are installed, and path variables are configured.
 2. Clone this repository locally.
 3. Execute `mvn clean install` to build the `.war` package.
 4. Deploy the `.war` file to your Tomcat Server's `webapps` directory, or configure Smart Tomcat within IntelliJ IDEA/Eclipse to run it directly.
@@ -186,4 +186,4 @@ The repository was strictly managed using branching and tagging best practices.
 
 ---
 
-_This project was developed to demonstrate enterprise architectural patterns, secure back-end processing, and scalable Java programming concepts._
+_This project was developed to demonstrate enterprise architectural patterns, secure back end processing, and scalable Java programming concepts._
